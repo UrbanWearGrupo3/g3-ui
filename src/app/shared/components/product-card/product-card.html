@@ -1,0 +1,46 @@
+<div class="bg-brand-card-gray border border-brand-border-gray rounded-2xl overflow-hidden group hover:border-brand-red transition-all duration-300 flex flex-col h-full glow-red">
+  <!-- Contenedor Imagen con Zoom -->
+  <div class="relative aspect-square overflow-hidden bg-neutral-900 flex-shrink-0">
+    <img [src]="product().imageUrl" [alt]="product().name"
+         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+    
+    <!-- Categoría Badge -->
+    <span class="absolute top-3 left-3 px-3 py-1 bg-black/80 backdrop-blur-md text-[10px] font-black uppercase tracking-wider text-brand-red border border-brand-red/30 rounded-lg">
+      {{ product().category }}
+    </span>
+
+    <!-- Stock Limitado Warning -->
+    @if (product().stock <= 5) {
+      <span class="absolute top-3 right-3 px-2 py-1 bg-brand-red text-black text-[9px] font-black uppercase tracking-wider rounded-lg">
+        LTD ({{ product().stock }})
+      </span>
+    }
+  </div>
+
+  <!-- Contenido/Detalles -->
+  <div class="p-5 flex flex-col flex-grow justify-between">
+    <div class="space-y-1">
+      <h3 class="font-bold text-base text-white truncate group-hover:text-brand-red transition-colors duration-200">
+        {{ product().name }}
+      </h3>
+      <p class="text-xs text-brand-text-muted line-clamp-2 min-h-[32px] leading-relaxed">
+        {{ product().description }}
+      </p>
+    </div>
+
+    <div class="flex items-center justify-between pt-4 mt-auto border-t border-brand-border-gray/50">
+      <span class="text-lg font-black text-white">
+        ${{ product().price | number:'1.2-2' }}
+      </span>
+      
+      <!-- Botón de compra rápido -->
+      <button (click)="addToCart()"
+              class="p-2.5 bg-brand-border-gray group-hover:bg-brand-red text-gray-300 group-hover:text-black rounded-xl transition-all duration-300 hover:scale-105"
+              aria-label="Añadir al carrito">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>

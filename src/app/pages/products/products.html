@@ -1,0 +1,78 @@
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+  <!-- Cabecera de Página -->
+  <div class="text-center max-w-2xl mx-auto mb-16 space-y-3">
+    <p class="text-xs text-brand-red font-black tracking-widest uppercase">CATÁLOGO URBANWEAR</p>
+    <h1 class="text-3xl sm:text-5xl font-black uppercase tracking-tight text-white">
+      Explora las Tendencias
+    </h1>
+    <p class="text-sm text-brand-text-muted">
+      Drops exclusivos y lanzamientos limitados diseñados para el asfalto. Filtrado en tiempo real.
+    </p>
+  </div>
+
+  <!-- Controles de Búsqueda y Filtros -->
+  <div class="space-y-6 mb-12">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <!-- Input de Búsqueda -->
+      <div class="relative max-w-md w-full">
+        <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+        </span>
+        <input type="text"
+               [value]="searchQuery()"
+               (input)="onSearch($event)"
+               placeholder="Buscar sudadera, remera, zapas..."
+               class="w-full pl-10 pr-4 py-3 bg-brand-card-gray border border-brand-border-gray rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-brand-red transition-all duration-300">
+      </div>
+
+      <!-- Indicador de cantidad -->
+      <div class="text-xs font-semibold text-brand-text-muted uppercase tracking-wider">
+        Mostrando {{ filteredProducts().length }} productos
+      </div>
+    </div>
+
+    <!-- Píldoras de Categorías -->
+    <div class="flex flex-wrap items-center gap-2 pb-2 border-b border-brand-border-gray/30">
+      @for (category of categories; track category) {
+        <button (click)="setCategory(category)"
+                [class]="selectedCategory() === category 
+                  ? 'px-4 py-2 bg-brand-red text-black font-black text-xs uppercase rounded-xl transition-all duration-300 shadow-md shadow-brand-red/10 cursor-pointer' 
+                  : 'px-4 py-2 bg-brand-card-gray border border-brand-border-gray hover:border-gray-500 text-gray-300 text-xs font-bold uppercase rounded-xl transition-all duration-300 cursor-pointer'">
+          {{ category }}
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- Cuadrícula de Productos -->
+  @if (filteredProducts().length > 0) {
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      @for (product of filteredProducts(); track product.id) {
+        <app-product-card [product]="product" class="h-full"></app-product-card>
+      }
+    </div>
+  } @else {
+    <!-- Estado de Búsqueda Vacía -->
+    <div class="text-center py-20 bg-brand-card-gray border border-brand-border-gray rounded-3xl max-w-xl mx-auto space-y-4">
+      <div class="mx-auto w-16 h-16 bg-neutral-900 text-gray-500 flex items-center justify-center rounded-2xl border border-brand-border-gray">
+        <svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+      </div>
+      <div>
+        <h3 class="text-lg font-bold text-white uppercase tracking-wider">No se encontraron prendas</h3>
+        <p class="text-sm text-brand-text-muted mt-1 px-6">
+          No existen productos en la categoría "{{ selectedCategory() }}" que coincidan con tu búsqueda "{{ searchQuery() }}".
+        </p>
+      </div>
+      <div>
+        <button (click)="setCategory('Todas'); searchQuery.set('')"
+                class="px-5 py-2.5 bg-brand-red hover:bg-white text-black font-black text-xs uppercase rounded-xl transition-all duration-300">
+          Reiniciar Búsqueda
+        </button>
+      </div>
+    </div>
+  }
+</div>

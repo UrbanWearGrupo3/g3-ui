@@ -1,0 +1,78 @@
+<div class="space-y-8">
+  <!-- Cabecera Gestión Usuarios -->
+  <div>
+    <p class="text-xs text-brand-red font-black tracking-widest uppercase mb-1">MANTENIMIENTO DE CUENTAS</p>
+    <h2 class="text-2xl sm:text-3xl font-black uppercase text-white tracking-tight">Usuarios Registrados</h2>
+  </div>
+
+  <!-- Tabla de Usuarios -->
+  <div class="bg-brand-card-gray border border-brand-border-gray rounded-2xl overflow-hidden">
+    <div class="p-6 border-b border-brand-border-gray flex items-center justify-between">
+      <h3 class="font-bold text-white uppercase tracking-wider text-sm">Cuentas de Acceso</h3>
+      <span class="px-2.5 py-1 bg-black border border-brand-border-gray text-[10px] font-bold text-gray-400 rounded-lg">
+        {{ users().length }} Miembros Registrados
+      </span>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse text-sm">
+        <thead>
+          <tr class="bg-black text-xs font-bold text-gray-400 uppercase tracking-wider border-b border-brand-border-gray">
+            <th class="py-4 px-6 w-16 text-center">ID</th>
+            <th class="py-4 px-6">Nombre Completo</th>
+            <th class="py-4 px-6">Email</th>
+            <th class="py-4 px-6 text-center">Rol</th>
+            <th class="py-4 px-6">Fecha Registro</th>
+            <th class="py-4 px-6 text-center">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-brand-border-gray/50">
+          @for (user of users(); track user.id) {
+            <tr class="hover:bg-black/25 transition-colors">
+              <td class="py-4 px-6 font-mono font-bold text-brand-text-muted text-center text-xs">#{{ user.id }}</td>
+              <td class="py-4 px-6 font-bold text-white">{{ user.firstName }} {{ user.lastName }}</td>
+              <td class="py-4 px-6 text-white text-xs">{{ user.email }}</td>
+              <td class="py-4 px-6">
+                <div class="flex justify-center">
+                  @if (user.role === 'admin') {
+                    <span class="px-2.5 py-0.5 bg-brand-red text-black text-[9px] font-black uppercase tracking-wider rounded-lg">
+                      Administrador
+                    </span>
+                  } @else {
+                    <span class="px-2.5 py-0.5 bg-black border border-brand-border-gray text-[9px] font-bold uppercase tracking-wider text-gray-400 rounded-lg">
+                      Comprador
+                    </span>
+                  }
+                </div>
+              </td>
+              <td class="py-4 px-6 text-brand-text-muted text-xs">
+                {{ user.createdAt | date:'mediumDate' }}
+              </td>
+              <td class="py-4 px-6">
+                <div class="flex justify-center">
+                  @if (user.role !== 'admin') {
+                    <button (click)="deleteUser(user.id)"
+                            class="p-2 text-gray-500 hover:text-brand-red rounded-lg hover:bg-brand-red/5 transition-colors cursor-pointer"
+                            aria-label="Eliminar usuario">
+                      <svg class="h-4.5 w-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                      </svg>
+                    </button>
+                  } @else {
+                    <span class="text-xs text-gray-600 font-medium italic">Protegido</span>
+                  }
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6" class="py-12 text-center text-brand-text-muted text-sm">
+                No hay usuarios registrados.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

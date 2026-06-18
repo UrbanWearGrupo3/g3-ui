@@ -15,23 +15,41 @@ export class Products implements OnInit {
 
   selectedCategory = signal<string>('Todas');
   categories = ['Todas', 'Camisetas', 'Sudaderas', 'Zapatillas', 'Accesorios', 'Pantalones', 'Chaquetas'];
+  searchQuery = signal<string>('');
 
   filteredProducts = computed(() => {
     const cat = this.selectedCategory();
-    if (cat === 'Todas') {
-      return this.products();
+    const query = this.searchQuery().toLowerCase().trim();
+    
+    let result = this.products();
+    
+    if (cat !== 'Todas') {
+      result = result.filter(p => p.category === cat);
     }
-    return this.products().filter(p => p.category === cat);
+    
+    if (query) {
+      result = result.filter(p => 
+        p.name.toLowerCase().includes(query) || 
+        p.description.toLowerCase().includes(query)
+      );
+    }
+    
+    return result;
   });
 
   ngOnInit(): void {
     this.productService.getProducts().subscribe({
       next: (prods) => this.products.set(prods),
-      error: (err) => console.error('Error fetching catalog from Java backend:', err)
+      error: (err) => console.error('Error fetching catalog:', err)
     });
   }
 
   setCategory(category: string) {
     this.selectedCategory.set(category);
+  }
+
+  onSearch(event: Event) {
+    const value = (event.target as HTMLInputElement).value;
+    this.searchQuery.set(value);
   }
 }

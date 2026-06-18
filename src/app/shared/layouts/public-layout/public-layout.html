@@ -1,0 +1,14 @@
+<div class="min-h-screen flex flex-col bg-black text-gray-100">
+  <!-- Navbar Fija -->
+  <app-navbar class="fixed top-0 inset-x-0 z-50"></app-navbar>
+
+  <!-- Contenido principal con animación de entrada y padding superior para la navbar -->
+  <main class="flex-grow pt-20">
+    <div class="page-transition">
+      <router-outlet></router-outlet>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <app-footer></app-footer>
+</div>

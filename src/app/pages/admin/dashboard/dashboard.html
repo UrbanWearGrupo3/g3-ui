@@ -1,0 +1,107 @@
+<div class="space-y-8">
+  <!-- Cabecera Dashboard -->
+  <div>
+    <p class="text-xs text-brand-red font-black tracking-widest uppercase mb-1">MÉTRICAS DEL SITIO</p>
+    <h2 class="text-2xl sm:text-3xl font-black uppercase text-white tracking-tight">Panel de Control</h2>
+  </div>
+
+  <!-- Fila de Tarjetas de Métricas -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <!-- Total Ventas -->
+    <div class="p-6 bg-brand-card-gray border border-brand-border-gray rounded-2xl space-y-2">
+      <p class="text-xs font-bold text-gray-500 uppercase tracking-wider">Total Ventas</p>
+      <p class="text-3xl font-black text-white">$222,980.00</p>
+      <div class="flex items-center gap-1.5 text-[10px] text-green-500 font-bold">
+        <span>&uarr; 12.5%</span>
+        <span class="text-gray-500">desde el mes anterior</span>
+      </div>
+    </div>
+
+    <!-- Pedidos Realizados -->
+    <div class="p-6 bg-brand-card-gray border border-brand-border-gray rounded-2xl space-y-2">
+      <p class="text-xs font-bold text-gray-500 uppercase tracking-wider">Pedidos Procesados</p>
+      <p class="text-3xl font-black text-white">{{ recentOrders().length }}</p>
+      <div class="flex items-center gap-1.5 text-[10px] text-brand-red font-bold">
+        <span>+{{ recentOrders().length }} activos</span>
+        <span class="text-gray-500">en cola de envío</span>
+      </div>
+    </div>
+
+    <!-- Productos Disponibles -->
+    <div class="p-6 bg-brand-card-gray border border-brand-border-gray rounded-2xl space-y-2">
+      <p class="text-xs font-bold text-gray-500 uppercase tracking-wider">Prendas en Catálogo</p>
+      <p class="text-3xl font-black text-white">8</p>
+      <div class="flex items-center gap-1.5 text-[10px] text-gray-400 font-bold">
+        <span>6 categorías</span>
+        <span class="text-gray-500">con stock disponible</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabla de Órdenes Recientes -->
+  <div class="bg-brand-card-gray border border-brand-border-gray rounded-2xl overflow-hidden">
+    <div class="p-6 border-b border-brand-border-gray flex items-center justify-between">
+      <h3 class="font-bold text-white uppercase tracking-wider text-sm">Ventas Recientes</h3>
+      <span class="px-2.5 py-1 bg-black border border-brand-border-gray text-[10px] font-bold text-gray-400 rounded-lg">
+        Actualizado en tiempo real
+      </span>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse text-sm">
+        <thead>
+          <tr class="bg-black text-xs font-bold text-gray-400 uppercase tracking-wider border-b border-brand-border-gray">
+            <th class="py-4 px-6">ID Pedido</th>
+            <th class="py-4 px-6">Cliente</th>
+            <th class="py-4 px-6">Email</th>
+            <th class="py-4 px-6">Prendas</th>
+            <th class="py-4 px-6">Total</th>
+            <th class="py-4 px-6 text-center">Estado</th>
+            <th class="py-4 px-6">Fecha</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-brand-border-gray/50">
+          @for (order of recentOrders(); track order.id) {
+            <tr class="hover:bg-black/25 transition-colors">
+              <td class="py-4 px-6 font-mono font-bold text-white text-xs">{{ order.id }}</td>
+              <td class="py-4 px-6 font-bold text-white">{{ order.customerName }}</td>
+              <td class="py-4 px-6 text-brand-text-muted text-xs">{{ order.customerEmail }}</td>
+              <td class="py-4 px-6 font-semibold text-white text-center">{{ order.itemsCount }}</td>
+              <td class="py-4 px-6 font-black text-white">${{ order.total | number:'1.2-2' }}</td>
+              <td class="py-4 px-6">
+                <div class="flex justify-center">
+                  @if (order.status === 'delivered') {
+                    <span class="px-2.5 py-1 bg-green-500/10 text-green-500 border border-green-500/20 text-[10px] font-black uppercase tracking-wider rounded-lg">
+                      Entregado
+                    </span>
+                  } @else if (order.status === 'shipped') {
+                    <span class="px-2.5 py-1 bg-blue-500/10 text-blue-500 border border-blue-500/20 text-[10px] font-black uppercase tracking-wider rounded-lg">
+                      En Camino
+                    </span>
+                  } @else if (order.status === 'pending') {
+                    <span class="px-2.5 py-1 bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 text-[10px] font-black uppercase tracking-wider rounded-lg animate-pulse">
+                      Pendiente
+                    </span>
+                  } @else {
+                    <span class="px-2.5 py-1 bg-brand-red/10 text-brand-red border border-brand-red/20 text-[10px] font-black uppercase tracking-wider rounded-lg">
+                      Cancelado
+                    </span>
+                  }
+                </div>
+              </td>
+              <td class="py-4 px-6 text-brand-text-muted text-xs">
+                {{ order.createdAt | date:'shortDate' }}
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="7" class="py-12 text-center text-brand-text-muted text-sm">
+                No hay ventas registradas actualmente.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

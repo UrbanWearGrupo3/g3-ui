@@ -1,77 +1,105 @@
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-  <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight mb-8">Tu Carrito</h1>
+  <!-- Cabecera Carrito -->
+  <div class="mb-10 text-left">
+    <p class="text-xs text-brand-red font-black tracking-widest uppercase mb-1">MERCADERÍA SELECCIONADA</p>
+    <h1 class="text-3xl sm:text-5xl font-black uppercase text-white tracking-tight">Tu Carrito</h1>
+  </div>
 
   @if (cartService.cartItems().length > 0) {
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-      <!-- Items List -->
+      <!-- Listado de Artículos -->
       <div class="lg:col-span-8 space-y-4">
         @for (item of cartService.cartItems(); track item.id) {
-          <div class="flex items-center gap-4 p-4 sm:p-6 bg-white border border-slate-100 rounded-2xl shadow-sm">
-            <!-- Image -->
-            <div class="h-20 w-20 sm:h-24 sm:w-24 flex-shrink-0 overflow-hidden bg-slate-50 rounded-xl">
+          <div class="flex flex-col sm:flex-row sm:items-center gap-4 p-5 bg-brand-card-gray border border-brand-border-gray rounded-2xl transition-all duration-300 hover:border-gray-700">
+            <!-- Imagen Prenda -->
+            <div class="h-20 w-20 sm:h-24 sm:w-24 flex-shrink-0 overflow-hidden bg-neutral-900 rounded-xl border border-brand-border-gray">
               <img [src]="item.imageUrl" [alt]="item.name" class="h-full w-full object-cover">
             </div>
 
-            <!-- Details -->
+            <!-- Detalles Prenda -->
             <div class="flex-grow min-w-0">
-              <span class="text-xs text-indigo-600 font-semibold tracking-wider uppercase mb-0.5 block">{{ item.category }}</span>
-              <h2 class="text-sm sm:text-base font-bold text-slate-900 truncate">{{ item.name }}</h2>
-              <span class="text-sm font-extrabold text-slate-900 block mt-1">${{ item.price }}</span>
+              <span class="text-[10px] text-brand-red font-black tracking-widest uppercase mb-0.5 block">
+                {{ item.category }}
+              </span>
+              <h2 class="text-sm sm:text-base font-bold text-white truncate">{{ item.name }}</h2>
+              <span class="text-sm font-black text-white block mt-1">
+                ${{ item.price | number:'1.2-2' }}
+              </span>
             </div>
 
-            <!-- Quantity Controls -->
-            <div class="flex items-center border border-slate-200 rounded-xl overflow-hidden bg-slate-50">
-              <button (click)="cartService.updateQuantity(item.id, item.quantity - 1)" class="px-2.5 py-1.5 hover:bg-slate-200 text-slate-650 transition-colors" aria-label="Disminuir cantidad">-</button>
-              <span class="px-3 py-1.5 text-sm font-semibold text-slate-800 bg-white min-w-[32px] text-center">{{ item.quantity }}</span>
-              <button (click)="cartService.updateQuantity(item.id, item.quantity + 1)" class="px-2.5 py-1.5 hover:bg-slate-200 text-slate-650 transition-colors" aria-label="Aumentar cantidad">+</button>
-            </div>
+            <!-- Controles de Cantidad y Eliminación -->
+            <div class="flex items-center justify-between sm:justify-end gap-6 mt-4 sm:mt-0 pt-4 sm:pt-0 border-t sm:border-t-0 border-brand-border-gray/50">
+              <!-- Controles Cantidad -->
+              <div class="flex items-center border border-brand-border-gray rounded-xl overflow-hidden bg-black">
+                <button (click)="cartService.updateQuantity(item.id, item.quantity - 1)" 
+                        class="px-3 py-2 hover:bg-neutral-900 text-gray-400 hover:text-brand-red font-bold transition-colors cursor-pointer" 
+                        aria-label="Disminuir cantidad">-</button>
+                <span class="px-3 py-2 text-xs font-black text-white bg-transparent min-w-[36px] text-center">
+                  {{ item.quantity }}
+                </span>
+                <button (click)="cartService.updateQuantity(item.id, item.quantity + 1)" 
+                        class="px-3 py-2 hover:bg-neutral-900 text-gray-400 hover:text-brand-red font-bold transition-colors cursor-pointer" 
+                        aria-label="Aumentar cantidad">+</button>
+              </div>
 
-            <!-- Remove Button -->
-            <button (click)="cartService.removeItem(item.id)" class="p-2 text-slate-400 hover:text-red-500 rounded-full hover:bg-red-50 transition-colors" aria-label="Eliminar producto">
-              <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-              </svg>
-            </button>
+              <!-- Eliminar Prenda -->
+              <button (click)="cartService.removeItem(item.id)" 
+                      class="p-2.5 text-gray-500 hover:text-brand-red rounded-xl hover:bg-brand-red/5 transition-all duration-300 cursor-pointer" 
+                      aria-label="Eliminar producto">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                </svg>
+              </button>
+            </div>
           </div>
         }
       </div>
 
-      <!-- Order Summary Card -->
-      <div class="lg:col-span-4 bg-white p-6 sm:p-8 rounded-3xl border border-slate-100 shadow-sm space-y-6">
-        <h2 class="text-lg font-bold text-slate-900 uppercase tracking-wider">Resumen de Compra</h2>
+      <!-- Resumen de Pago -->
+      <div class="lg:col-span-4 bg-brand-card-gray p-6 sm:p-8 rounded-3xl border border-brand-border-gray space-y-6">
+        <h2 class="text-base font-black text-white uppercase tracking-wider">Resumen de Compra</h2>
 
-        <div class="space-y-3 text-sm">
-          <div class="flex justify-between text-slate-650">
+        <div class="space-y-4 text-sm border-b border-brand-border-gray pb-6">
+          <div class="flex justify-between text-brand-text-muted">
             <span>Subtotal</span>
-            <span class="font-semibold text-slate-900">${{ cartService.subtotal() | number:'1.2-2' }}</span>
+            <span class="font-bold text-white">${{ cartService.subtotal() | number:'1.2-2' }}</span>
           </div>
-          <div class="flex justify-between text-slate-650">
+          <div class="flex justify-between text-brand-text-muted">
             <span>Envío</span>
-            <span class="font-semibold text-slate-900">${{ cartService.shipping | number:'1.2-2' }}</span>
-          </div>
-          <div class="border-t border-slate-100 pt-3 flex justify-between text-base font-extrabold text-slate-900">
-            <span>Total</span>
-            <span class="text-indigo-650">${{ cartService.total() | number:'1.2-2' }}</span>
+            <span class="font-bold text-white">${{ cartService.shipping | number:'1.2-2' }}</span>
           </div>
         </div>
 
-        <div class="pt-2">
+        <div class="flex justify-between text-lg font-black text-white pt-2">
+          <span>Total</span>
+          <span class="text-brand-red">${{ cartService.total() | number:'1.2-2' }}</span>
+        </div>
+
+        <div class="pt-4">
           <a routerLink="/checkout"
-             class="w-full flex justify-center items-center py-3.5 px-4 bg-slate-900 hover:bg-indigo-600 text-white font-bold rounded-xl shadow transition-colors text-center text-sm">
+             class="w-full flex justify-center items-center py-4 px-6 bg-brand-red hover:bg-white text-black hover:text-black font-black uppercase text-xs rounded-xl shadow-lg shadow-brand-red/10 transition-all duration-300 text-center tracking-wider">
             Proceder al Pago
           </a>
         </div>
       </div>
     </div>
   } @else {
-    <div class="text-center py-16 bg-white border border-dashed border-slate-200 rounded-3xl">
-      <svg class="mx-auto h-16 w-16 text-slate-350" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
-      </svg>
-      <h2 class="mt-4 text-lg font-bold text-slate-900">Tu carrito está vacío</h2>
-      <p class="mt-2 text-sm text-slate-500">¿Aún no te decides? Tenemos los mejores drops de la temporada esperándote.</p>
-      <div class="mt-6">
-        <a routerLink="/products" class="inline-flex items-center px-6 py-3 bg-slate-900 hover:bg-indigo-600 text-white font-semibold rounded-xl shadow-md transition-colors text-sm">
+    <!-- Estado Carrito Vacío -->
+    <div class="text-center py-20 bg-brand-card-gray border border-brand-border-gray rounded-3xl max-w-xl mx-auto space-y-4">
+      <div class="mx-auto w-16 h-16 bg-neutral-900 text-gray-500 flex items-center justify-center rounded-2xl border border-brand-border-gray">
+        <svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+        </svg>
+      </div>
+      <div>
+        <h3 class="text-lg font-bold text-white uppercase tracking-wider">Tu carrito está vacío</h3>
+        <p class="text-sm text-brand-text-muted mt-1 px-6">
+          ¿Aún no te decides? Tenemos los mejores drops de la temporada esperándote.
+        </p>
+      </div>
+      <div>
+        <a routerLink="/products" 
+           class="inline-flex items-center px-6 py-3.5 bg-brand-red hover:bg-white text-black hover:text-black font-black text-xs uppercase rounded-xl shadow-md transition-all duration-300 tracking-wider">
           Volver a la Tienda
         </a>
       </div>
