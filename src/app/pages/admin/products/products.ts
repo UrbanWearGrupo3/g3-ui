@@ -1,5 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
+import { firstValueFrom } from 'rxjs';
 import { ProductService } from '../../../core/services/product.service';
 import { Product, ProductoRequest, VarianteRequest } from '../../../models/product';
 
@@ -22,6 +23,12 @@ export class Products implements OnInit {
   brandField = signal<string>('');
   categoryIdField = signal<number>(1);
   imageField = signal<string>('');
+  editingProductId = signal<number | null>(null);
+
+  // Image Upload States
+  selectedFile = signal<File | null>(null);
+  imagePreviewUrl = signal<string>('');
+  isUploadingImage = signal<boolean>(false);
 
   // Variante fields
   varTalle = signal<string>('');
@@ -103,6 +110,55 @@ export class Products implements OnInit {
     this.variantes.set([]);
     this.formError.set('');
     this.formSuccess.set('');
+    this.selectedFile.set(null);
+    this.imagePreviewUrl.set('');
+    this.isUploadingImage.set(false);
+    this.editingProductId.set(null);
+  }
+
+  onFileSelected(event: Event) {
+    const target = event.target as HTMLInputElement;
+    if (target.files && target.files.length > 0) {
+      const file = target.files[0];
+      this.selectedFile.set(file);
+
+      // Create local preview
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.imagePreviewUrl.set(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  removeSelectedFile() {
+    this.selectedFile.set(null);
+    this.imagePreviewUrl.set('');
+  }
+
+  editProduct(product: Product) {
+    this.editingProductId.set(product.id);
+    this.nameField.set(product.nombre);
+    this.descField.set(product.descripcion || '');
+    this.priceField.set(product.precio);
+    this.brandField.set(product.marca || '');
+    this.categoryIdField.set(product.categoria?.id || 1);
+    this.imageField.set(product.imagenUrl || '');
+    this.imagePreviewUrl.set(product.imagenUrl || '');
+    this.selectedFile.set(null);
+    if (product.variantes) {
+      this.variantes.set(product.variantes.map(v => ({
+        talle: v.talle,
+        color: v.color,
+        stock: v.stock,
+        codigoBarras: v.codigoBarras
+      })));
+    } else {
+      this.variantes.set([]);
+    }
+    this.formError.set('');
+    this.formSuccess.set('');
+    this.isFormOpen.set(true);
   }
 
   updateFormField(field: string, event: Event) {
@@ -141,33 +197,74 @@ export class Products implements OnInit {
     this.variantes.update(list => list.filter((_, i) => i !== index));
   }
 
-  onSubmitProduct(event: Event) {
+  async onSubmitProduct(event: Event) {
     event.preventDefault();
     this.formError.set('');
     this.formSuccess.set('');
+    this.isLoading.set(true);
+
+    let finalImageUrl = this.imageField();
+
+    const file = this.selectedFile();
+    if (file) {
+      this.isUploadingImage.set(true);
+      try {
+        const uploadRes = await firstValueFrom(this.productService.uploadImage(file));
+        finalImageUrl = uploadRes.url;
+        this.isUploadingImage.set(false);
+      } catch (err: any) {
+        console.error('Error uploading image to backend proxy:', err);
+        this.formError.set('Error al subir la imagen al backend: ' + (err.message || err.error?.error || err.error || err));
+        this.isUploadingImage.set(false);
+        this.isLoading.set(false);
+        return;
+      }
+    }
 
     const request: ProductoRequest = {
       nombre: this.nameField(),
       descripcion: this.descField(),
       precio: this.priceField(),
       marca: this.brandField(),
-      imagenUrl: this.imageField() || undefined,
+      imagenUrl: finalImageUrl || undefined,
       categoriaId: this.categoryIdField(),
       variantes: this.variantes().length > 0 ? this.variantes() : undefined
     };
 
-    this.productService.createProduct(request).subscribe({
-      next: (savedProd) => {
-        this.products.update(items => [savedProd, ...items]);
-        this.formSuccess.set(`Producto "${savedProd.nombre}" creado exitosamente.`);
-        setTimeout(() => this.toggleForm(false), 1500);
-      },
-      error: (err) => {
-        console.error('Error saving product:', err);
-        const message = err.error?.message || err.error?.detail || 'Error al guardar el producto. Verifica los datos.';
-        this.formError.set(message);
-      }
-    });
+    const editId = this.editingProductId();
+    if (editId != null) {
+      this.productService.updateProduct(editId, request).subscribe({
+        next: (updatedProd) => {
+          this.products.update(items =>
+            items.map(p => p.id === editId ? updatedProd : p)
+          );
+          this.formSuccess.set(`Producto "${updatedProd.nombre}" actualizado exitosamente.`);
+          this.isLoading.set(false);
+          setTimeout(() => this.toggleForm(false), 1500);
+        },
+        error: (err) => {
+          console.error('Error updating product:', err);
+          const message = err.error?.message || err.error?.detail || 'Error al actualizar el producto. Verifica los datos.';
+          this.formError.set(message);
+          this.isLoading.set(false);
+        }
+      });
+    } else {
+      this.productService.createProduct(request).subscribe({
+        next: (savedProd) => {
+          this.products.update(items => [savedProd, ...items]);
+          this.formSuccess.set(`Producto "${savedProd.nombre}" creado exitosamente.`);
+          this.isLoading.set(false);
+          setTimeout(() => this.toggleForm(false), 1500);
+        },
+        error: (err) => {
+          console.error('Error saving product:', err);
+          const message = err.error?.message || err.error?.detail || 'Error al guardar el producto. Verifica los datos.';
+          this.formError.set(message);
+          this.isLoading.set(false);
+        }
+      });
+    }
   }
 
   getTotalStock(product: Product): number {

@@ -18,7 +18,7 @@
   <!-- Formulario Agregar Producto -->
   <div class="p-6 sm:p-8 bg-brand-card-gray border border-brand-border-gray rounded-3xl space-y-6">
     <div class="flex justify-between items-center border-b border-brand-border-gray pb-4">
-      <h3 class="font-bold text-white uppercase tracking-wider text-sm">Nuevo Drop Streetwear</h3>
+      <h3 class="font-bold text-white uppercase tracking-wider text-sm">{{ editingProductId() ? 'Editar Prenda' : 'Nuevo Drop Streetwear' }}</h3>
       <button (click)="toggleForm(false)"
         class="text-gray-500 hover:text-white text-xs font-bold uppercase cursor-pointer">Cerrar</button>
     </div>
@@ -69,11 +69,34 @@
             class="w-full px-4 py-3 bg-black border border-brand-border-gray rounded-xl text-sm text-white focus:outline-none focus:border-brand-red transition-all">
         </div>
         <div>
-          <label for="" class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">URL de Imagen
-            (Opcional)</label>
-          <input id="" type="text" [value]="imageField()" (input)="updateFormField('image', $event)"
-            placeholder="Dejar vacío para usar predeterminada"
-            class="w-full px-4 py-3 bg-black border border-brand-border-gray rounded-xl text-sm text-white focus:outline-none focus:border-brand-red transition-all">
+          <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Imagen de la Prenda</label>
+          <div class="flex items-center gap-4">
+            <!-- File Input Container -->
+            <div class="relative flex-1">
+              <input id="prod-file" type="file" accept="image/*" (change)="onFileSelected($event)" class="hidden">
+              <label for="prod-file" class="flex items-center justify-center gap-2 w-full px-4 py-3 bg-black border border-brand-border-gray rounded-xl text-sm text-gray-400 hover:text-white hover:border-brand-red transition-all duration-300 cursor-pointer">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                </svg>
+                <span>{{ selectedFile() ? selectedFile()!.name : 'Seleccionar archivo...' }}</span>
+              </label>
+            </div>
+
+            <!-- Image Preview -->
+            @if (imagePreviewUrl()) {
+              <div class="relative h-12 w-12 bg-neutral-900 border border-brand-border-gray rounded-lg overflow-hidden flex-shrink-0 group">
+                <img [src]="imagePreviewUrl()" class="w-full h-full object-cover">
+                <button type="button" (click)="removeSelectedFile()" class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-white cursor-pointer">
+                  <svg class="w-4 h-4 text-brand-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                  </svg>
+                </button>
+              </div>
+            }
+          </div>
+          @if (isUploadingImage()) {
+            <p class="text-[10px] text-brand-red font-bold uppercase tracking-widest mt-1 animate-pulse">Subiendo imagen a Supabase Storage...</p>
+          }
         </div>
       </div>
 
@@ -134,7 +157,7 @@
         </button>
         <button type="submit"
           class="px-6 py-3 bg-brand-red hover:bg-white text-black hover:text-black font-black text-xs uppercase rounded-xl transition-all duration-300 shadow-md cursor-pointer">
-          Guardar Drop
+          {{ editingProductId() ? 'Actualizar Drop' : 'Guardar Drop' }}
         </button>
       </div>
     </form>
@@ -179,7 +202,7 @@
             <td class="py-4 px-6">
               <div
                 class="h-12 w-12 bg-neutral-900 border border-brand-border-gray rounded-lg overflow-hidden flex-shrink-0">
-                <img [src]="" [alt]="prod.nombre" class="w-full h-full object-cover">
+                <img [src]="getImageUrl(prod)" [alt]="prod.nombre" class="w-full h-full object-cover">
               </div>
             </td>
             <td class="py-4 px-6">
@@ -224,7 +247,16 @@
               </button>
             </td>
             <td class="py-4 px-6">
-              <div class="flex justify-center">
+              <div class="flex justify-center gap-1">
+                <button (click)="editProduct(prod)"
+                  class="p-2 text-gray-500 hover:text-white rounded-lg hover:bg-white/5 transition-colors cursor-pointer"
+                  aria-label="Editar prenda">
+                  <svg class="h-4.5 w-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                    </path>
+                  </svg>
+                </button>
                 <button (click)="deleteProduct(prod.id)"
                   class="p-2 text-gray-500 hover:text-brand-red rounded-lg hover:bg-brand-red/5 transition-colors cursor-pointer"
                   aria-label="Eliminar prenda">
