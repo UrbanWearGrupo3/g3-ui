@@ -46,6 +46,7 @@
       <div>
         <label for="password-reg" class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Contraseña</label>
         <input id="password-reg" type="password" required autocomplete="new-password" placeholder="••••••••"
+               [value]="password()" (input)="updateField('password', $event)"
                class="w-full px-4 py-3 bg-black border border-brand-border-gray rounded-xl text-sm text-white placeholder-gray-650 focus:outline-none focus:border-brand-red transition-all">
       </div>
 

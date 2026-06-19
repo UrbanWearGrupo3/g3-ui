@@ -12,6 +12,17 @@ const browserDistFolder = join(import.meta.dirname, '../browser');
 const app = express();
 const angularApp = new AngularNodeAppEngine();
 
+import { createProxyMiddleware } from 'http-proxy-middleware';
+
+app.use(
+  '/api',
+  createProxyMiddleware({
+    target: 'http://localhost:8080',
+    changeOrigin: true,
+    secure: false
+  })
+);
+
 /**
  * Example Express Rest API endpoints can be defined here.
  * Uncomment and define endpoints as necessary.
@@ -37,8 +48,12 @@ app.use(
 
 /**
  * Handle all other requests by rendering the Angular application.
+ * Skip /api requests so they can be forwarded by the dev server proxy.
  */
 app.use((req, res, next) => {
+  if (req.url.startsWith('/api')) {
+    return next();
+  }
   angularApp
     .handle(req)
     .then((response) =>

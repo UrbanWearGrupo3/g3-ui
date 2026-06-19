@@ -9,28 +9,24 @@ export interface CartItem extends Product {
   providedIn: 'root'
 })
 export class CartService {
-  private readonly STORAGE_KEY = 'urban_wear_cart';
+  private readonly STORAGE_KEY = 'urban_wear_cart_v2';
   
-  // Cart items signal
+
   private readonly _cartItems = signal<CartItem[]>([]);
   readonly cartItems = this._cartItems.asReadonly();
 
-  // Shipping rate: Flat rate of $1500
   readonly shipping = 1500;
 
-  // Computed subtotal
   readonly subtotal = computed(() => {
-    return this._cartItems().reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    return this._cartItems().reduce((sum, item) => sum + (item.precio * item.quantity), 0);
   });
 
-  // Computed total
   readonly total = computed(() => {
     const sub = this.subtotal();
     return sub > 0 ? sub + this.shipping : 0;
   });
 
   constructor() {
-    // Load initial cart from localStorage
     if (typeof window !== 'undefined') {
       try {
         const stored = localStorage.getItem(this.STORAGE_KEY);
@@ -41,7 +37,6 @@ export class CartService {
         console.error('Error loading cart from localStorage:', e);
       }
 
-      // Automatically persist to localStorage whenever cart changes
       effect(() => {
         try {
           localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this._cartItems()));
@@ -52,36 +47,44 @@ export class CartService {
     }
   }
 
+  private getTotalStock(product: Product): number {
+    if (!product.variantes || product.variantes.length === 0) return 999;
+    return product.variantes.reduce((sum, v) => sum + v.stock, 0);
+  }
+
   addToCart(product: Product, quantity = 1) {
+    const maxStock = this.getTotalStock(product);
     this._cartItems.update(items => {
       const existing = items.find(item => item.id === product.id);
       if (existing) {
         return items.map(item => 
           item.id === product.id 
-            ? { ...item, quantity: Math.min(item.quantity + quantity, item.stock) }
+            ? { ...item, quantity: Math.min(item.quantity + quantity, maxStock) }
             : item
         );
       }
-      return [...items, { ...product, quantity: Math.min(quantity, product.stock) }];
+      return [...items, { ...product, quantity: Math.min(quantity, maxStock) }];
     });
   }
 
-  updateQuantity(productId: string, quantity: number) {
+  updateQuantity(productId: number, quantity: number) {
     if (quantity <= 0) {
       this.removeItem(productId);
       return;
     }
     
     this._cartItems.update(items => 
-      items.map(item => 
-        item.id === productId 
-          ? { ...item, quantity: Math.min(quantity, item.stock) }
-          : item
-      )
+      items.map(item => {
+        if (item.id === productId) {
+          const maxStock = this.getTotalStock(item);
+          return { ...item, quantity: Math.min(quantity, maxStock) };
+        }
+        return item;
+      })
     );
   }
 
-  removeItem(productId: string) {
+  removeItem(productId: number) {
     this._cartItems.update(items => items.filter(item => item.id !== productId));
   }
 

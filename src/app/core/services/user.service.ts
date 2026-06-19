@@ -1,134 +1,176 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, inject, signal, PLATFORM_ID } from '@angular/core';
+import { isPlatformServer } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
+import { map, tap, catchError } from 'rxjs/operators';
 import { User } from '../../models/user';
 
 @Injectable({
   providedIn: 'root'
 })
 export class UserService {
-  private readonly STORAGE_KEY = 'urban_wear_users';
-  private readonly users = signal<User[]>([]);
+  private readonly http = inject(HttpClient);
+  private readonly platformId = inject(PLATFORM_ID);
+  private readonly SESSION_KEY = 'urban_wear_session';
+  private readonly TOKEN_KEY = 'urban_wear_token';
 
-  // Current logged in user state (null if guest)
+  private get apiUrl(): string {
+    if (isPlatformServer(this.platformId)) {
+      return 'http://localhost:8080/api';
+    }
+    return '/api';
+  }
+
   private readonly _currentUser = signal<User | null>(null);
   readonly currentUser = this._currentUser.asReadonly();
 
   constructor() {
     if (typeof window !== 'undefined') {
       try {
-        const stored = localStorage.getItem(this.STORAGE_KEY);
-        if (stored) {
-          this.users.set(JSON.parse(stored));
-        } else {
-          // Initialize mock users
-          const initialUsers: User[] = [
-            {
-              id: '1',
-              email: 'admin@urbanwear.com',
-              firstName: 'Emilio',
-              lastName: 'García',
-              role: 'admin',
-              createdAt: new Date('2026-06-01T10:00:00')
-            },
-            {
-              id: '2',
-              email: 'sofia@gmail.com',
-              firstName: 'Sofía',
-              lastName: 'Rodríguez',
-              role: 'user',
-              createdAt: new Date('2026-06-15T14:30:00')
-            },
-            {
-              id: '3',
-              email: 'lucas.paz@outlook.com',
-              firstName: 'Lucas',
-              lastName: 'Paz',
-              role: 'user',
-              createdAt: new Date('2026-06-17T09:15:00')
-            }
-          ];
-          this.users.set(initialUsers);
-          localStorage.setItem(this.STORAGE_KEY, JSON.stringify(initialUsers));
-        }
-      } catch (e) {
-        console.error(e);
-      }
-
-      // Check for current active user session
-      try {
-        const active = localStorage.getItem('urban_wear_session');
+        const active = localStorage.getItem(this.SESSION_KEY);
         if (active) {
           this._currentUser.set(JSON.parse(active));
-        } else {
-          // Default to admin for testing / local exploration convenience
-          const adminUser = this.users().find(u => u.role === 'admin') || null;
-          this._currentUser.set(adminUser);
         }
       } catch (e) {
-        console.error(e);
+        console.error('Error loading session from localStorage:', e);
       }
     }
   }
 
-  getUsers(): Observable<User[]> {
-    return of(this.users());
-  }
-
-  deleteUser(id: string): Observable<void> {
-    this.users.update(items => {
-      const updated = items.filter(u => u.id !== id);
-      if (typeof window !== 'undefined') {
-        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(updated));
-      }
-      return updated;
-    });
-    return of(undefined);
-  }
-
-  login(email: string): boolean {
-    const user = this.users().find(u => u.email.toLowerCase() === email.toLowerCase());
-    if (user) {
-      this._currentUser.set(user);
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('urban_wear_session', JSON.stringify(user));
-      }
-      return true;
-    }
-    return false;
-  }
-
-  register(firstName: string, lastName: string, email: string): boolean {
-    const exists = this.users().some(u => u.email.toLowerCase() === email.toLowerCase());
-    if (exists) return false;
-
-    const newUser: User = {
-      id: String(this.users().length + 1),
-      email,
-      firstName,
-      lastName,
-      role: 'user',
-      createdAt: new Date()
+  private mapUser(res: any): User {
+    return {
+      id: res.id ? res.id.toString() : '',
+      email: res.email,
+      firstName: res.nombre,
+      lastName: res.apellido,
+      role: res.rol?.toLowerCase() === 'admin' ? 'admin' : 'user',
+      activo: res.activo !== undefined ? res.activo : true,
+      createdAt: res.fechaCreacion ? new Date(res.fechaCreacion) : undefined
     };
+  }
 
-    this.users.update(items => {
-      const updated = [...items, newUser];
-      if (typeof window !== 'undefined') {
-        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(updated));
-      }
-      return updated;
-    });
+  login(email: string, password?: string): Observable<boolean> {
+    return this.http.post<any>(`${this.apiUrl}/auth/login`, { email, password }).pipe(
+      tap(res => {
+        if (res && res.token) {
+          if (typeof window !== 'undefined') {
+            localStorage.setItem(this.TOKEN_KEY, res.token);
+            const user = this.mapUser({
+              id: '',
+              email: res.email,
+              nombre: res.nombre,
+              apellido: res.apellido,
+              rol: res.rol
+            });
+            localStorage.setItem(this.SESSION_KEY, JSON.stringify(user));
+            this._currentUser.set(user);
+          }
+        }
+      }),
+      map(res => !!(res && res.token)),
+      catchError(err => {
+        console.error('Backend login error:', err);
+        return of(false);
+      })
+    );
+  }
 
-    this._currentUser.set(newUser);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('urban_wear_session', JSON.stringify(newUser));
+  register(firstName: string, lastName: string, email: string, password?: string): Observable<boolean> {
+    const payload: any = {
+      nombre: firstName,
+      apellido: lastName,
+      email: email,
+      password: password
+    };
+    if (email.toLowerCase().endsWith('@urbanwear.com')) {
+      payload.adminPasscode = 'URBANWEAR-SECRET-ADMIN-2026';
     }
-    return true;
+
+    return this.http.post<any>(`${this.apiUrl}/auth/register`, payload).pipe(
+      map(res => {
+        return !!res;
+      }),
+      catchError(err => {
+        console.error('Backend registration error:', err);
+        return of(false);
+      })
+    );
   }
 
   logout() {
     this._currentUser.set(null);
     if (typeof window !== 'undefined') {
-      localStorage.removeItem('urban_wear_session');
+      localStorage.removeItem(this.SESSION_KEY);
+      localStorage.removeItem(this.TOKEN_KEY);
     }
+  }
+
+  getUsers(): Observable<User[]> {
+    return this.http.get<any>(`${this.apiUrl}/usuarios`).pipe(
+      map(res => {
+        const list = res && res.content ? res.content : (Array.isArray(res) ? res : []);
+        return list.map((u: any) => this.mapUser(u));
+      }),
+      catchError(err => {
+        console.error('Backend getUsers error:', err);
+        return of([]);
+      })
+    );
+  }
+
+  deleteUser(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/usuarios/${id}`).pipe(
+      catchError(err => {
+        console.error('Backend deleteUser error:', err);
+        throw err;
+      })
+    );
+  }
+
+  changeRol(id: string, rol: 'ADMIN' | 'CLIENTE'): Observable<User> {
+    return this.http.patch<any>(`${this.apiUrl}/usuarios/${id}/rol`, null, {
+      params: { rol }
+    }).pipe(
+      map(u => this.mapUser(u)),
+      catchError(err => {
+        console.error('Backend changeRol error:', err);
+        throw err;
+      })
+    );
+  }
+
+  toggleActivo(id: string, activo: boolean): Observable<User> {
+    return this.http.patch<any>(`${this.apiUrl}/usuarios/${id}/activo`, null, {
+      params: { activo: activo.toString() }
+    }).pipe(
+      map(u => this.mapUser(u)),
+      catchError(err => {
+        console.error('Backend toggleActivo error:', err);
+        throw err;
+      })
+    );
+  }
+
+  updateProfile(firstName: string, lastName: string, password?: string): Observable<User> {
+    const payload: any = {
+      nombre: firstName,
+      apellido: lastName
+    };
+    if (password) {
+      payload.password = password;
+    }
+    return this.http.put<any>(`${this.apiUrl}/usuarios/me`, payload).pipe(
+      map(res => this.mapUser(res)),
+      tap(user => {
+        if (typeof window !== 'undefined') {
+          localStorage.setItem(this.SESSION_KEY, JSON.stringify(user));
+          this._currentUser.set(user);
+        }
+      }),
+      catchError(err => {
+        console.error('Backend updateProfile error:', err);
+        throw err;
+      })
+    );
   }
 }

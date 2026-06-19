@@ -15,7 +15,7 @@ export interface Order {
   providedIn: 'root'
 })
 export class OrderService {
-  private readonly STORAGE_KEY = 'urban_wear_orders';
+  private readonly STORAGE_KEY = 'urban_wear_orders_v2';
   private readonly orders = signal<Order[]>([]);
 
   constructor() {
@@ -23,45 +23,14 @@ export class OrderService {
       try {
         const stored = localStorage.getItem(this.STORAGE_KEY);
         if (stored) {
-          // Parse dates correctly
           const parsed = JSON.parse(stored).map((o: any) => ({
             ...o,
             createdAt: new Date(o.createdAt)
           }));
           this.orders.set(parsed);
         } else {
-          // Initialize mock orders
-          const initialOrders: Order[] = [
-            {
-              id: 'ORD-5401',
-              customerName: 'Sofía Rodríguez',
-              customerEmail: 'sofia@gmail.com',
-              itemsCount: 2,
-              total: 71490.00,
-              status: 'delivered',
-              createdAt: new Date('2026-06-15T15:00:00')
-            },
-            {
-              id: 'ORD-5402',
-              customerName: 'Lucas Paz',
-              customerEmail: 'lucas.paz@outlook.com',
-              itemsCount: 1,
-              total: 89990.00,
-              status: 'shipped',
-              createdAt: new Date('2026-06-17T11:20:00')
-            },
-            {
-              id: 'ORD-5403',
-              customerName: 'Mateo Fernández',
-              customerEmail: 'mateo@yahoo.com',
-              itemsCount: 3,
-              total: 61500.00,
-              status: 'pending',
-              createdAt: new Date('2026-06-18T08:45:00')
-            }
-          ];
-          this.orders.set(initialOrders);
-          localStorage.setItem(this.STORAGE_KEY, JSON.stringify(initialOrders));
+          this.orders.set([]);
+          localStorage.setItem(this.STORAGE_KEY, JSON.stringify([]));
         }
       } catch (e) {
         console.error(e);

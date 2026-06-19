@@ -23,6 +23,7 @@
             <th class="py-4 px-6">Email</th>
             <th class="py-4 px-6 text-center">Rol</th>
             <th class="py-4 px-6">Fecha Registro</th>
+            <th class="py-4 px-6 text-center">Estado</th>
             <th class="py-4 px-6 text-center">Acciones</th>
           </tr>
         </thead>
@@ -48,6 +49,18 @@
               <td class="py-4 px-6 text-brand-text-muted text-xs">
                 {{ user.createdAt | date:'mediumDate' }}
               </td>
+              <td class="py-4 px-6 text-center">
+                @if (user.role !== 'admin') {
+                  <button (click)="toggleActivo(user.id, user.activo)"
+                          [class]="user.activo 
+                            ? 'px-2 py-0.5 bg-green-500/10 text-green-500 border border-green-500/35 text-[9px] font-bold uppercase rounded-lg cursor-pointer hover:bg-green-500/20 transition-colors'
+                            : 'px-2 py-0.5 bg-gray-500/10 text-gray-500 border border-gray-500/35 text-[9px] font-bold uppercase rounded-lg cursor-pointer hover:bg-gray-500/20 transition-colors'">
+                    {{ user.activo ? 'Activo' : 'Inactivo' }}
+                  </button>
+                } @else {
+                  <span class="px-2 py-0.5 bg-green-500/10 text-green-500 border border-green-500/35 text-[9px] font-bold uppercase rounded-lg">Activo</span>
+                }
+              </td>
               <td class="py-4 px-6">
                 <div class="flex justify-center">
                   @if (user.role !== 'admin') {
@@ -66,7 +79,7 @@
             </tr>
           } @empty {
             <tr>
-              <td colspan="6" class="py-12 text-center text-brand-text-muted text-sm">
+              <td colspan="7" class="py-12 text-center text-brand-text-muted text-sm">
                 No hay usuarios registrados.
               </td>
             </tr>

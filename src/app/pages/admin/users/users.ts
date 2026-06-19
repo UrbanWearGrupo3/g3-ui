@@ -30,4 +30,15 @@ export class Users implements OnInit {
       });
     }
   }
+
+  toggleActivo(id: string, currentActivo: boolean): void {
+    this.userService.toggleActivo(id, !currentActivo).subscribe({
+      next: (updated) => {
+        this.users.update(items =>
+          items.map(u => u.id === id ? updated : u)
+        );
+      },
+      error: (err) => console.error('Error toggling user active state:', err)
+    });
+  }
 }

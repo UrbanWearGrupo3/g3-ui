@@ -13,6 +13,7 @@ export class Login {
   private readonly router = inject(Router);
 
   email = signal<string>('');
+  password = signal<string>('');
   error = signal<string>('');
 
   updateEmail(event: Event) {
@@ -21,18 +22,31 @@ export class Login {
     this.error.set('');
   }
 
+  updatePassword(event: Event) {
+    const value = (event.target as HTMLInputElement).value;
+    this.password.set(value);
+    this.error.set('');
+  }
+
   onSubmit(event: Event) {
     event.preventDefault();
-    const success = this.userService.login(this.email());
-    if (success) {
-      const user = this.userService.currentUser();
-      if (user?.role === 'admin') {
-        this.router.navigate(['/admin']);
-      } else {
-        this.router.navigate(['/']);
+    this.userService.login(this.email(), this.password()).subscribe({
+      next: (success) => {
+        if (success) {
+          const user = this.userService.currentUser();
+          if (user?.role === 'admin') {
+            this.router.navigate(['/admin']);
+          } else {
+            this.router.navigate(['/']);
+          }
+        } else {
+          this.error.set('El correo o la contraseña son incorrectos. Prueba con admin@urbanwear.com / admin123 o cliente@demo.com / cliente123.');
+        }
+      },
+      error: (err) => {
+        console.error('Error logging in:', err);
+        this.error.set('Error de conexión con el servidor. Inténtalo de nuevo.');
       }
-    } else {
-      this.error.set('El correo no coincide con ningún usuario registrado. Prueba con "admin@urbanwear.com" o "sofia@gmail.com".');
-    }
+    });
   }
 }

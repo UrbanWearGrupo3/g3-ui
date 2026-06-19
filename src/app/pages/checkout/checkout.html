@@ -1,170 +1,188 @@
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
   @if (isSuccess()) {
-    <!-- Vista de Éxito en Checkout -->
-    <div class="text-center py-20 bg-brand-card-gray border border-brand-border-gray rounded-3xl max-w-xl mx-auto space-y-6 animate-pulse">
-      <div class="mx-auto w-20 h-20 bg-brand-red/10 text-brand-red flex items-center justify-center rounded-full border border-brand-red/30 shadow-lg shadow-brand-red/10">
-        <svg class="h-10 w-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
-        </svg>
-      </div>
-      <div class="space-y-2">
-        <p class="text-xs text-brand-red font-black tracking-widest uppercase">PAGO COMPLETADO</p>
-        <h2 class="text-2xl sm:text-4xl font-black uppercase text-white tracking-tight">¡Orden Confirmada!</h2>
-        <p class="text-sm text-brand-text-muted px-6 leading-relaxed">
-          Gracias por comprar en UrbanWear. Hemos registrado tu pedido de forma segura. Tu código de seguimiento es:
-        </p>
-        <div class="inline-block bg-black px-4 py-2 rounded-xl border border-brand-border-gray text-white font-mono text-sm font-bold mt-2">
-          {{ orderId() }}
-        </div>
-      </div>
-      <div class="pt-6">
-        <a routerLink="/products" 
-           class="inline-flex items-center px-6 py-3.5 bg-brand-red hover:bg-white text-black hover:text-black font-black text-xs uppercase rounded-xl transition-all duration-300 tracking-wider">
-          Seguir Comprando
-        </a>
+  <!-- Vista de Éxito en Checkout -->
+  <div
+    class="text-center py-20 bg-brand-card-gray border border-brand-border-gray rounded-3xl max-w-xl mx-auto space-y-6 animate-pulse">
+    <div
+      class="mx-auto w-20 h-20 bg-brand-red/10 text-brand-red flex items-center justify-center rounded-full border border-brand-red/30 shadow-lg shadow-brand-red/10">
+      <svg class="h-10 w-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
+      </svg>
+    </div>
+    <div class="space-y-2">
+      <p class="text-xs text-brand-red font-black tracking-widest uppercase">PAGO COMPLETADO</p>
+      <h2 class="text-2xl sm:text-4xl font-black uppercase text-white tracking-tight">¡Orden Confirmada!</h2>
+      <p class="text-sm text-brand-text-muted px-6 leading-relaxed">
+        Gracias por comprar en UrbanWear. Hemos registrado tu pedido de forma segura. Tu código de seguimiento es:
+      </p>
+      <div
+        class="inline-block bg-black px-4 py-2 rounded-xl border border-brand-border-gray text-white font-mono text-sm font-bold mt-2">
+        {{ orderId() }}
       </div>
     </div>
+    <div class="pt-6">
+      <a routerLink="/products"
+        class="inline-flex items-center px-6 py-3.5 bg-brand-red hover:bg-white text-black hover:text-black font-black text-xs uppercase rounded-xl transition-all duration-300 tracking-wider">
+        Seguir Comprando
+      </a>
+    </div>
+  </div>
   } @else {
-    <!-- Formulario de Checkout y Resumen -->
-    <div class="mb-10 text-left">
-      <p class="text-xs text-brand-red font-black tracking-widest uppercase mb-1">PROCESAR TRANSACCIÓN</p>
-      <h1 class="text-3xl sm:text-5xl font-black uppercase text-white tracking-tight">Finalizar Compra</h1>
-    </div>
+  <!-- Formulario de Checkout y Resumen -->
+  <div class="mb-10 text-left">
+    <p class="text-xs text-brand-red font-black tracking-widest uppercase mb-1">PROCESAR TRANSACCIÓN</p>
+    <h1 class="text-3xl sm:text-5xl font-black uppercase text-white tracking-tight">Finalizar Compra</h1>
+  </div>
 
-    @if (cartService.cartItems().length > 0) {
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        
-        <!-- Formulario (Izquierda) -->
-        <form (submit)="onSubmit($event)" class="lg:col-span-8 space-y-6">
-          
-          <!-- Datos Personales -->
-          <div class="bg-brand-card-gray border border-brand-border-gray p-6 sm:p-8 rounded-3xl space-y-4">
-            <h2 class="text-sm font-black text-white uppercase tracking-wider mb-4 border-b border-brand-border-gray pb-3">1. Datos Personales</h2>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label for="first-name" class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Nombre</label>
-                <input id="first-name" type="text" required [value]="firstName()" (input)="updateField('firstName', $event)"
-                       class="w-full px-4 py-3 bg-black border border-brand-border-gray rounded-xl text-sm text-white placeholder-gray-650 focus:outline-none focus:border-brand-red transition-all">
-              </div>
-              <div>
-                <label for="last-name" class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Apellido</label>
-                <input id="last-name" type="text" required [value]="lastName()" (input)="updateField('lastName', $event)"
-                       class="w-full px-4 py-3 bg-black border border-brand-border-gray rounded-xl text-sm text-white placeholder-gray-650 focus:outline-none focus:border-brand-red transition-all">
-              </div>
-            </div>
-            <div>
-              <label for="email-addr" class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Correo Electrónico</label>
-              <input id="email-addr" type="email" required [value]="email()" (input)="updateField('email', $event)"
-                     placeholder="nombre@ejemplo.com"
-                     class="w-full px-4 py-3 bg-black border border-brand-border-gray rounded-xl text-sm text-white placeholder-gray-650 focus:outline-none focus:border-brand-red transition-all">
-            </div>
+  @if (cartService.cartItems().length > 0) {
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+
+    <!-- Formulario (Izquierda) -->
+    <form (submit)="onSubmit($event)" class="lg:col-span-8 space-y-6">
+
+      <!-- Datos Personales -->
+      <div class="bg-brand-card-gray border border-brand-border-gray p-6 sm:p-8 rounded-3xl space-y-4">
+        <h2 class="text-sm font-black text-white uppercase tracking-wider mb-4 border-b border-brand-border-gray pb-3">
+          1. Datos Personales</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label for="first-name"
+              class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Nombre</label>
+            <input id="first-name" type="text" required [value]="firstName()" (input)="updateField('firstName', $event)"
+              class="w-full px-4 py-3 bg-black border border-brand-border-gray rounded-xl text-sm text-white placeholder-gray-650 focus:outline-none focus:border-brand-red transition-all">
           </div>
-
-          <!-- Dirección de Entrega -->
-          <div class="bg-brand-card-gray border border-brand-border-gray p-6 sm:p-8 rounded-3xl space-y-4">
-            <h2 class="text-sm font-black text-white uppercase tracking-wider mb-4 border-b border-brand-border-gray pb-3">2. Dirección de Entrega</h2>
-            <div>
-              <label for="address" class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Dirección de Envío</label>
-              <input id="address" type="text" required placeholder="Calle 123, Piso 1, Dpto B"
-                     class="w-full px-4 py-3 bg-black border border-brand-border-gray rounded-xl text-sm text-white placeholder-gray-650 focus:outline-none focus:border-brand-red transition-all">
-            </div>
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <label for="city" class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Ciudad</label>
-                <input id="city" type="text" required placeholder="Buenos Aires"
-                       class="w-full px-4 py-3 bg-black border border-brand-border-gray rounded-xl text-sm text-white placeholder-gray-650 focus:outline-none focus:border-brand-red transition-all">
-              </div>
-              <div>
-                <label for="zip-code" class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Código Postal</label>
-                <input id="zip-code" type="text" required placeholder="C1425"
-                       class="w-full px-4 py-3 bg-black border border-brand-border-gray rounded-xl text-sm text-white placeholder-gray-650 focus:outline-none focus:border-brand-red transition-all">
-              </div>
-            </div>
-          </div>
-
-          <!-- Detalles de Pago Ficticio -->
-          <div class="bg-brand-card-gray border border-brand-border-gray p-6 sm:p-8 rounded-3xl space-y-4">
-            <h2 class="text-sm font-black text-white uppercase tracking-wider mb-4 border-b border-brand-border-gray pb-3">3. Método de Pago</h2>
-            <div>
-              <label for="card-number" class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Número de Tarjeta</label>
-              <input id="card-number" type="text" required placeholder="4500 1234 5678 9012"
-                     class="w-full px-4 py-3 bg-black border border-brand-border-gray rounded-xl text-sm text-white placeholder-gray-650 focus:outline-none focus:border-brand-red transition-all">
-            </div>
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <label for="expiry" class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Vencimiento</label>
-                <input id="expiry" type="text" required placeholder="MM/AA"
-                       class="w-full px-4 py-3 bg-black border border-brand-border-gray rounded-xl text-sm text-white placeholder-gray-650 focus:outline-none focus:border-brand-red transition-all">
-              </div>
-              <div>
-                <label for="cvv" class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">CVV</label>
-                <input id="cvv" type="password" required placeholder="•••" maxlength="4"
-                       class="w-full px-4 py-3 bg-black border border-brand-border-gray rounded-xl text-sm text-white placeholder-gray-650 focus:outline-none focus:border-brand-red transition-all">
-              </div>
-            </div>
-          </div>
-
-          <!-- Botón de Pago Grande -->
-          <button type="submit" [disabled]="isSubmitting()"
-                  class="w-full flex justify-center items-center py-4 px-6 bg-brand-red hover:bg-white text-black hover:text-black font-black uppercase text-xs rounded-xl shadow-lg shadow-brand-red/10 transition-all duration-300 tracking-wider disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
-            @if (isSubmitting()) {
-              <span class="inline-block animate-spin mr-2 h-4 w-4 border-2 border-black border-t-transparent rounded-full"></span>
-              Procesando Pago...
-            } @else {
-              Confirmar Transacción y Pagar ${{ cartService.total() | number:'1.2-2' }}
-            }
-          </button>
-        </form>
-
-        <!-- Resumen de Pedido (Derecha) -->
-        <div class="lg:col-span-4 bg-brand-card-gray p-6 sm:p-8 border border-brand-border-gray rounded-3xl space-y-6">
-          <h2 class="text-sm font-black text-white uppercase tracking-wider border-b border-brand-border-gray pb-3">Resumen de Pedido</h2>
-          
-          <!-- Lista de Items en checkout -->
-          <div class="space-y-4 max-h-[280px] overflow-y-auto pr-1">
-            @for (item of cartService.cartItems(); track item.id) {
-              <div class="flex items-center gap-3">
-                <div class="h-12 w-12 bg-neutral-900 border border-brand-border-gray rounded-lg overflow-hidden flex-shrink-0">
-                  <img [src]="item.imageUrl" [alt]="item.name" class="w-full h-full object-cover">
-                </div>
-                <div class="flex-grow min-w-0">
-                  <h3 class="text-xs font-bold text-white truncate">{{ item.name }}</h3>
-                  <p class="text-[10px] text-brand-text-muted mt-0.5">Cant: {{ item.quantity }} &bull; ${{ item.price }}</p>
-                </div>
-                <span class="text-xs font-bold text-white">${{ (item.price * item.quantity) | number:'1.2-2' }}</span>
-              </div>
-            }
-          </div>
-
-          <div class="space-y-3 pt-4 border-t border-brand-border-gray/50 text-xs">
-            <div class="flex justify-between text-brand-text-muted">
-              <span>Subtotal</span>
-              <span class="font-bold text-white">${{ cartService.subtotal() | number:'1.2-2' }}</span>
-            </div>
-            <div class="flex justify-between text-brand-text-muted">
-              <span>Costo Envío</span>
-              <span class="font-bold text-white">${{ cartService.shipping | number:'1.2-2' }}</span>
-            </div>
-            <div class="flex justify-between text-sm font-black text-white pt-2 border-t border-brand-border-gray/50">
-              <span>Total</span>
-              <span class="text-brand-red">${{ cartService.total() | number:'1.2-2' }}</span>
-            </div>
+          <div>
+            <label for="last-name"
+              class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Apellido</label>
+            <input id="last-name" type="text" required [value]="lastName()" (input)="updateField('lastName', $event)"
+              class="w-full px-4 py-3 bg-black border border-brand-border-gray rounded-xl text-sm text-white placeholder-gray-650 focus:outline-none focus:border-brand-red transition-all">
           </div>
         </div>
+        <div>
+          <label for="email-addr" class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Correo
+            Electrónico</label>
+          <input id="email-addr" type="email" required [value]="email()" (input)="updateField('email', $event)"
+            placeholder="nombre@ejemplo.com"
+            class="w-full px-4 py-3 bg-black border border-brand-border-gray rounded-xl text-sm text-white placeholder-gray-650 focus:outline-none focus:border-brand-red transition-all">
+        </div>
+      </div>
 
+      <!-- Dirección de Entrega -->
+      <div class="bg-brand-card-gray border border-brand-border-gray p-6 sm:p-8 rounded-3xl space-y-4">
+        <h2 class="text-sm font-black text-white uppercase tracking-wider mb-4 border-b border-brand-border-gray pb-3">
+          2. Dirección de Entrega</h2>
+        <div>
+          <label for="address" class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Dirección
+            de Envío</label>
+          <input id="address" type="text" required placeholder="Calle 123, Piso 1, Dpto B"
+            class="w-full px-4 py-3 bg-black border border-brand-border-gray rounded-xl text-sm text-white placeholder-gray-650 focus:outline-none focus:border-brand-red transition-all">
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label for="city"
+              class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Ciudad</label>
+            <input id="city" type="text" required placeholder="Buenos Aires"
+              class="w-full px-4 py-3 bg-black border border-brand-border-gray rounded-xl text-sm text-white placeholder-gray-650 focus:outline-none focus:border-brand-red transition-all">
+          </div>
+          <div>
+            <label for="zip-code" class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Código
+              Postal</label>
+            <input id="zip-code" type="text" required placeholder="C1425"
+              class="w-full px-4 py-3 bg-black border border-brand-border-gray rounded-xl text-sm text-white placeholder-gray-650 focus:outline-none focus:border-brand-red transition-all">
+          </div>
+        </div>
       </div>
-    @} @else {
-      <!-- Estado Checkout Vacío -->
-      <div class="text-center py-20 bg-brand-card-gray border border-brand-border-gray rounded-3xl max-w-xl mx-auto space-y-4">
-        <h3 class="text-lg font-bold text-white uppercase tracking-wider">No hay artículos para facturar</h3>
-        <p class="text-sm text-brand-text-muted px-6">
-          Agrega prendas a tu carrito antes de proceder al pago.
-        </p>
-        <a routerLink="/products" 
-           class="inline-flex items-center px-6 py-3.5 bg-brand-red hover:bg-white text-black hover:text-black font-black text-xs uppercase rounded-xl transition-all duration-300">
-          Volver al Catálogo
-        </a>
+
+      <!-- Detalles de Pago Ficticio -->
+      <div class="bg-brand-card-gray border border-brand-border-gray p-6 sm:p-8 rounded-3xl space-y-4">
+        <h2 class="text-sm font-black text-white uppercase tracking-wider mb-4 border-b border-brand-border-gray pb-3">
+          3. Método de Pago</h2>
+        <div>
+          <label for="card-number" class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Número
+            de Tarjeta</label>
+          <input id="card-number" type="text" required placeholder="4500 1234 5678 9012"
+            class="w-full px-4 py-3 bg-black border border-brand-border-gray rounded-xl text-sm text-white placeholder-gray-650 focus:outline-none focus:border-brand-red transition-all">
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label for="expiry"
+              class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Vencimiento</label>
+            <input id="expiry" type="text" required placeholder="MM/AA"
+              class="w-full px-4 py-3 bg-black border border-brand-border-gray rounded-xl text-sm text-white placeholder-gray-650 focus:outline-none focus:border-brand-red transition-all">
+          </div>
+          <div>
+            <label for="cvv" class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">CVV</label>
+            <input id="cvv" type="password" required placeholder="•••" maxlength="4"
+              class="w-full px-4 py-3 bg-black border border-brand-border-gray rounded-xl text-sm text-white placeholder-gray-650 focus:outline-none focus:border-brand-red transition-all">
+          </div>
+        </div>
       </div>
-    }
+
+      <!-- Botón de Pago Grande -->
+      <button type="submit" [disabled]="isSubmitting()"
+        class="w-full flex justify-center items-center py-4 px-6 bg-brand-red hover:bg-white text-black hover:text-black font-black uppercase text-xs rounded-xl shadow-lg shadow-brand-red/10 transition-all duration-300 tracking-wider disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
+        @if (isSubmitting()) {
+        <span
+          class="inline-block animate-spin mr-2 h-4 w-4 border-2 border-black border-t-transparent rounded-full"></span>
+        Procesando Pago...
+        } @else {
+        Confirmar Transacción y Pagar ${{ cartService.total() | number:'1.2-2' }}
+        }
+      </button>
+    </form>
+
+    <!-- Resumen de Pedido (Derecha) -->
+    <div class="lg:col-span-4 bg-brand-card-gray p-6 sm:p-8 border border-brand-border-gray rounded-3xl space-y-6">
+      <h2 class="text-sm font-black text-white uppercase tracking-wider border-b border-brand-border-gray pb-3">Resumen
+        de Pedido</h2>
+
+      <!-- Lista de Items en checkout -->
+      <div class="space-y-4 max-h-[280px] overflow-y-auto pr-1">
+        @for (item of cartService.cartItems(); track item.id) {
+        <div class="flex items-center gap-3">
+          <div
+            class="h-12 w-12 bg-neutral-900 border border-brand-border-gray rounded-lg overflow-hidden flex-shrink-0">
+            <img [src]="item.imagenUrl" [alt]="item.nombre" class="w-full h-full object-cover">
+          </div>
+          <div class="flex-grow min-w-0">
+            <h3 class="text-xs font-bold text-white truncate">{{ item.nombre }}</h3>
+            <p class="text-[10px] text-brand-text-muted mt-0.5">Cant: {{ item.quantity }} &bull; ${{ item.precio }}</p>
+          </div>
+          <span class="text-xs font-bold text-white">${{ (item.precio * item.quantity) | number:'1.2-2' }}</span>
+        </div>
+        }
+      </div>
+
+      <div class="space-y-3 pt-4 border-t border-brand-border-gray/50 text-xs">
+        <div class="flex justify-between text-brand-text-muted">
+          <span>Subtotal</span>
+          <span class="font-bold text-white">${{ cartService.subtotal() | number:'1.2-2' }}</span>
+        </div>
+        <div class="flex justify-between text-brand-text-muted">
+          <span>Costo Envío</span>
+          <span class="font-bold text-white">${{ cartService.shipping | number:'1.2-2' }}</span>
+        </div>
+        <div class="flex justify-between text-sm font-black text-white pt-2 border-t border-brand-border-gray/50">
+          <span>Total</span>
+          <span class="text-brand-red">${{ cartService.total() | number:'1.2-2' }}</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  @} @else {
+  <!-- Estado Checkout Vacío -->
+  <div
+    class="text-center py-20 bg-brand-card-gray border border-brand-border-gray rounded-3xl max-w-xl mx-auto space-y-4">
+    <h3 class="text-lg font-bold text-white uppercase tracking-wider">No hay artículos para facturar</h3>
+    <p class="text-sm text-brand-text-muted px-6">
+      Agrega prendas a tu carrito antes de proceder al pago.
+    </p>
+    <a routerLink="/products"
+      class="inline-flex items-center px-6 py-3.5 bg-brand-red hover:bg-white text-black hover:text-black font-black text-xs uppercase rounded-xl transition-all duration-300">
+      Volver al Catálogo
+    </a>
+  </div>
+  }
   }
 </div>

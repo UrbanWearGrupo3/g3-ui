@@ -17,30 +17,56 @@ export class Products implements OnInit {
   categories = ['Todas', 'Camisetas', 'Sudaderas', 'Zapatillas', 'Accesorios', 'Pantalones', 'Chaquetas'];
   searchQuery = signal<string>('');
 
+  // Pagination
+  currentPage = signal<number>(0);
+  totalPages = signal<number>(0);
+  totalElements = signal<number>(0);
+  isLoading = signal<boolean>(false);
+
   filteredProducts = computed(() => {
     const cat = this.selectedCategory();
     const query = this.searchQuery().toLowerCase().trim();
-    
+
     let result = this.products();
-    
+
     if (cat !== 'Todas') {
-      result = result.filter(p => p.category === cat);
+      result = result.filter(p => {
+        const catName = p.categoria?.nombre || '';
+        return catName.toLowerCase().includes(cat.toLowerCase());
+      });
     }
-    
+
     if (query) {
-      result = result.filter(p => 
-        p.name.toLowerCase().includes(query) || 
-        p.description.toLowerCase().includes(query)
+      result = result.filter(p =>
+        p.nombre.toLowerCase().includes(query) ||
+        (p.descripcion || '').toLowerCase().includes(query)
       );
     }
-    
+
     return result;
   });
 
   ngOnInit(): void {
-    this.productService.getProducts().subscribe({
-      next: (prods) => this.products.set(prods),
-      error: (err) => console.error('Error fetching catalog:', err)
+    this.loadProducts();
+  }
+
+  loadProducts(): void {
+    this.isLoading.set(true);
+    this.productService.getProducts({
+      activo: true,
+      page: this.currentPage(),
+      size: 50
+    }).subscribe({
+      next: (page) => {
+        this.products.set(page.content);
+        this.totalPages.set(page.totalPages);
+        this.totalElements.set(page.totalElements);
+        this.isLoading.set(false);
+      },
+      error: (err) => {
+        console.error('Error fetching catalog:', err);
+        this.isLoading.set(false);
+      }
     });
   }
 
@@ -51,5 +77,19 @@ export class Products implements OnInit {
   onSearch(event: Event) {
     const value = (event.target as HTMLInputElement).value;
     this.searchQuery.set(value);
+  }
+
+  nextPage() {
+    if (this.currentPage() < this.totalPages() - 1) {
+      this.currentPage.update(p => p + 1);
+      this.loadProducts();
+    }
+  }
+
+  previousPage() {
+    if (this.currentPage() > 0) {
+      this.currentPage.update(p => p - 1);
+      this.loadProducts();
+    }
   }
 }

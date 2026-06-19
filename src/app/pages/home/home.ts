@@ -15,9 +15,9 @@ export class Home implements OnInit {
   featuredProducts = signal<Product[]>([]);
 
   ngOnInit(): void {
-    this.productService.getProducts().subscribe({
-      next: (prods) => this.featuredProducts.set(prods.slice(0, 4)),
-      error: (err) => console.error('Error loading products from Java backend:', err)
+    this.productService.getProducts({ activo: true, size: 4 }).subscribe({
+      next: (page) => this.featuredProducts.set(page.content),
+      error: (err) => console.error('Error loading products from backend:', err)
     });
   }
 }
