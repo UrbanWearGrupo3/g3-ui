@@ -37,6 +37,31 @@ export class UserService {
     }
   }
 
+  validateSession(): Observable<boolean> {
+    if (typeof window === 'undefined') {
+      return of(false);
+    }
+    const token = localStorage.getItem(this.TOKEN_KEY);
+    if (!token) {
+      this.logout();
+      return of(false);
+    }
+
+    return this.http.get<any>(`${this.apiUrl}/usuarios/me`).pipe(
+      tap(res => {
+        const user = this.mapUser(res);
+        localStorage.setItem(this.SESSION_KEY, JSON.stringify(user));
+        this._currentUser.set(user);
+      }),
+      map(() => true),
+      catchError(err => {
+        console.error('Session validation failed:', err);
+        this.logout();
+        return of(false);
+      })
+    );
+  }
+
   private mapUser(res: any): User {
     return {
       id: res.id ? res.id.toString() : '',

@@ -10,6 +10,7 @@ import { Checkout } from './pages/checkout/checkout';
 import { Dashboard } from './pages/admin/dashboard/dashboard';
 import { Products as AdminProducts } from './pages/admin/products/products';
 import { Users } from './pages/admin/users/users';
+import { AdminGuard } from './core/guards/admin.guard';
 
 export const routes: Routes = [
   {
@@ -27,6 +28,7 @@ export const routes: Routes = [
   {
     path: 'admin',
     component: AdminLayout,
+    canActivate: [AdminGuard],
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: Dashboard },
@@ -34,6 +36,5 @@ export const routes: Routes = [
       { path: 'users', component: Users }
     ]
   },
-
   { path: '**', redirectTo: '' }
 ];
