@@ -8,7 +8,7 @@ import { UserService } from '../../core/services/user.service';
   templateUrl: './login.html',
   styleUrl: './login.css',
 })
-export class Login {
+export class LoginComponent {
   private readonly userService = inject(UserService);
   private readonly router = inject(Router);
 
@@ -33,8 +33,9 @@ export class Login {
     this.userService.login(this.email(), this.password()).subscribe({
       next: (success) => {
         if (success) {
-          const user = this.userService.currentUser();
-          if (user?.role === 'admin') {
+        const user = this.userService.currentUser();
+        console.log('LoginComponent: logged in user', user);
+        if (user?.role === 'admin') {
             this.router.navigate(['/admin']);
           } else {
             this.router.navigate(['/']);

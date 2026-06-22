@@ -1,19 +1,24 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { MercadoPagoService } from '../../core/services/mercado-pago.service';
 import { Router, RouterLink } from '@angular/router';
-import { DecimalPipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { CartService } from '../../core/services/cart.service';
 import { OrderService } from '../../core/services/order.service';
 import { UserService } from '../../core/services/user.service';
 
 @Component({
   selector: 'app-checkout',
-  imports: [RouterLink, DecimalPipe],
+  standalone: true,
+  imports: [RouterLink, CommonModule, FormsModule],
   templateUrl: './checkout.html',
   styleUrl: './checkout.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class Checkout {
+export class Checkout implements OnInit {
   protected readonly cartService = inject(CartService);
   private readonly orderService = inject(OrderService);
+  private readonly mpService = inject(MercadoPagoService);
   private readonly userService = inject(UserService);
   private readonly router = inject(Router);
 
@@ -21,43 +26,76 @@ export class Checkout {
   isSubmitting = signal<boolean>(false);
   isSuccess = signal<boolean>(false);
   orderId = signal<string>('');
+  errorMessage = signal<string>('');
+  // Payment form fields
+  cardNumber = signal<string>('');
+  expiry = signal<string>('');
+  cvv = signal<string>('');
 
   // Prepopulate form using logged-in user if available
   firstName = signal<string>(this.userService.currentUser()?.firstName || '');
   lastName = signal<string>(this.userService.currentUser()?.lastName || '');
   email = signal<string>(this.userService.currentUser()?.email || '');
 
-  onSubmit(event: Event) {
-    event.preventDefault();
-    if (this.cartService.cartItems().length === 0) return;
-
-    this.isSubmitting.set(true);
-
-    // Simulate payment processing delay
-    setTimeout(() => {
-      const customerName = `${this.firstName()} ${this.lastName()}`.trim() || 'Cliente Invitado';
-      const customerEmail = this.email() || 'invitado@urbanwear.com';
-      const itemsCount = this.cartService.cartItems().reduce((sum, item) => sum + item.quantity, 0);
-      const total = this.cartService.total();
-
-      this.orderService.addOrder(customerName, customerEmail, itemsCount, total).subscribe({
-        next: (order) => {
-          this.orderId.set(order.id);
-          this.isSuccess.set(true);
-          this.cartService.clearCart();
-          this.isSubmitting.set(false);
-        },
-        error: () => {
-          this.isSubmitting.set(false);
-        }
-      });
-    }, 1500);
+  async ngOnInit(): Promise<void> {
+    await this.mpService.init();
   }
 
-  updateField(field: 'firstName' | 'lastName' | 'email', event: Event) {
+  async onSubmit(event: Event): Promise<void> {
+    event.preventDefault();
+    if (this.isSubmitting()) {
+      return;
+    }
+    if (this.cartService.cartItems().length === 0) return;
+    this.isSubmitting.set(true);
+    this.errorMessage.set('');
+
+    const customerName = `${this.firstName()} ${this.lastName()}`.trim() || 'Cliente Invitado';
+    const customerEmail = this.email() || 'invitado@urbanwear.com';
+
+    this.orderService.addOrder(customerName, customerEmail,
+      this.cartService.cartItems().reduce((sum, i) => sum + i.quantity, 0),
+      this.cartService.total()
+    ).subscribe({
+      next: async (order) => {
+        this.orderId.set(order.id);
+        const numericId = Number(order.id);
+        if (!isNaN(numericId) && numericId > 0) {
+          try {
+            const pref = await this.mpService.crearPreference(numericId).toPromise();
+            if (pref && (pref.sandboxInitPoint || pref.initPoint)) {
+              // Redirect user to Mercado Pago checkout
+              window.location.href = pref.sandboxInitPoint || pref.initPoint;
+              return;
+            }
+          } catch (e) {
+            console.error('Error creating MercadoPago preference', e);
+          }
+        } else {
+          console.warn('Guest order detected, skipping MercadoPago preference creation');
+        }
+        this.router.navigate(['checkout-success'], { queryParams: { orderId: order.id } });
+        this.cartService.clearCart();
+        this.isSubmitting.set(false);
+      },
+      error: (err) => {
+        console.error('Checkout error:', err);
+        this.isSubmitting.set(false);
+        this.errorMessage.set(
+          err?.error?.message || 
+          'Error al procesar el pedido. Por favor, inicia sesión de nuevo o revisa tu conexión.'
+        );
+      }
+    });
+  }
+
+  updateField(field: 'firstName' | 'lastName' | 'email' | 'cardNumber' | 'expiry' | 'cvv', event: Event) {
     const value = (event.target as HTMLInputElement).value;
     if (field === 'firstName') this.firstName.set(value);
     else if (field === 'lastName') this.lastName.set(value);
     else if (field === 'email') this.email.set(value);
+    else if (field === 'cardNumber') this.cardNumber.set(value);
+    else if (field === 'expiry') this.expiry.set(value);
+    else if (field === 'cvv') this.cvv.set(value);
   }
 }

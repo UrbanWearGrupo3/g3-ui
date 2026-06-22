@@ -1,9 +1,10 @@
 import { Routes } from '@angular/router';
 import { PublicLayout } from './shared/layouts/public-layout/public-layout';
 import { AdminLayout } from './shared/layouts/admin-layout/admin-layout';
+import { CheckoutSuccess } from './pages/checkout-success/checkout-success';
+import { LoginComponent } from './pages/login/login';
+import { RegisterComponent } from './pages/register/register';
 import { Home } from './pages/home/home';
-import { Login } from './pages/login/login';
-import { Register } from './pages/register/register';
 import { Products as UserProducts } from './pages/products/products';
 import { Cart } from './pages/cart/cart';
 import { Checkout } from './pages/checkout/checkout';
@@ -18,11 +19,12 @@ export const routes: Routes = [
     component: PublicLayout,
     children: [
       { path: '', component: Home },
-      { path: 'login', component: Login },
-      { path: 'register', component: Register },
+      { path: 'login', component: LoginComponent },
+      { path: 'register', component: RegisterComponent },
       { path: 'products', component: UserProducts },
-      { path: 'cart', component: Cart },
-      { path: 'checkout', component: Checkout }
+      { path: 'checkout', component: Checkout },
+      { path: 'checkout-success', component: CheckoutSuccess },
+    { path: 'cart', component: Cart },
     ]
   },
   {

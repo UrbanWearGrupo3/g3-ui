@@ -1,4 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
+
 import { Router, RouterLink } from '@angular/router';
 import { UserService } from '../../core/services/user.service';
 
@@ -7,8 +8,9 @@ import { UserService } from '../../core/services/user.service';
   imports: [RouterLink],
   templateUrl: './register.html',
   styleUrl: './register.css',
+  standalone: true,
 })
-export class Register {
+export class RegisterComponent {
   private readonly userService = inject(UserService);
   private readonly router = inject(Router);
 
