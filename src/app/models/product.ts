@@ -1,14 +1,14 @@
-export interface ColorInfo {
+export interface ColorResponse {
   id: number;
   nombre: string;
   codigoHex?: string;
-  activo?: boolean;
+  activo: boolean;
 }
 
 export interface Variante {
   id: number;
   talle: string;
-  color: ColorInfo;
+  color: ColorResponse;
   stock: number;
   codigoBarras: string;
 }
@@ -19,6 +19,7 @@ export interface Categoria {
   descripcion: string;
   activo: boolean;
 }
+
 
 export interface Product {
   id: number;

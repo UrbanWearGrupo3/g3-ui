@@ -1,9 +1,11 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal, computed } from '@angular/core';
 import { DecimalPipe, CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
 import { ProductService } from '../../../core/services/product.service';
-import { Product, ProductoRequest, VarianteRequest } from '../../../models/product';
+import { Product, ProductoRequest, VarianteRequest, ColorResponse } from '../../../models/product';
+import { ColorService } from '../../../core/services/color.service';
+
 
 @Component({
   selector: 'app-products',
@@ -11,10 +13,15 @@ import { Product, ProductoRequest, VarianteRequest } from '../../../models/produ
   templateUrl: './products.html',
   styleUrl: './products.css',
 })
-export class Products implements OnInit {
+export class Products implements OnInit, OnDestroy {
   private readonly productService = inject(ProductService);
+  private readonly colorService = inject(ColorService);
   products = signal<Product[]>([]);
+  colores = signal<ColorResponse[]>([]);
   isLoading = signal<boolean>(false);
+  activeFormTab = signal<'general' | 'variants'>('general');
+
+
 
   // Add product form states
   isFormOpen = signal<boolean>(false);
@@ -33,9 +40,41 @@ export class Products implements OnInit {
 
   // Variante fields
   varTalle = signal<string>('');
-  varColorId = signal<number>(1);
+  varColorId = signal<number | null>(null);
   varStock = signal<number>(0);
   variantes = signal<VarianteRequest[]>([]);
+
+  // Bulk Generation fields
+  tallesDisponibles = ['S', 'M', 'L', 'XL', 'U'];
+  selectedTalles = signal<string[]>([]);
+  selectedColors = signal<number[]>([]);
+  bulkStock = signal<number>(10);
+
+  // Variant filtering fields
+  varFilterText = signal<string>('');
+  varFilterTalle = signal<string>('');
+  varFilterColorId = signal<number | null>(null);
+
+  variantesFiltradas = computed(() => {
+    const list = this.variantes();
+    const query = this.varFilterText().toLowerCase().trim();
+    const talle = this.varFilterTalle();
+    const colorId = this.varFilterColorId();
+
+    return list.filter((v, index) => {
+      const matchText = !query || 
+        (v.codigoBarras && v.codigoBarras.toLowerCase().includes(query)) ||
+        `variante-${index}`.includes(query);
+
+      const matchTalle = !talle || v.talle === talle;
+
+      const matchColor = colorId == null || v.colorId === colorId;
+
+      return matchText && matchTalle && matchColor;
+    });
+  });
+
+
 
   // Form feedback
   formError = signal<string>('');
@@ -53,7 +92,25 @@ export class Products implements OnInit {
 
   ngOnInit(): void {
     this.loadProducts();
+    this.loadColors();
   }
+
+  ngOnDestroy(): void {
+    if (typeof document !== 'undefined') {
+      document.body.classList.remove('overflow-hidden');
+    }
+  }
+
+
+  loadColors() {
+    this.colorService.getColores(true).subscribe({
+      next: (data) => {
+        this.colores.set(data);
+      },
+      error: (err) => console.error('Error cargando colores:', err)
+    });
+  }
+
 
   loadProducts() {
     this.isLoading.set(true);
@@ -126,10 +183,20 @@ export class Products implements OnInit {
 
   toggleForm(isOpen: boolean) {
     this.isFormOpen.set(isOpen);
+    if (typeof document !== 'undefined') {
+      if (isOpen) {
+        document.body.classList.add('overflow-hidden');
+      } else {
+        document.body.classList.remove('overflow-hidden');
+      }
+    }
     if (!isOpen) {
       this.clearForm();
+    } else {
+      this.activeFormTab.set('general');
     }
   }
+
 
   clearForm() {
     this.nameField.set('');
@@ -139,10 +206,18 @@ export class Products implements OnInit {
     this.categoryIdField.set(1);
     this.imageField.set('');
     this.varTalle.set('');
-    this.varColorId.set(1);
+    this.varColorId.set(null);
     this.varStock.set(0);
     this.variantes.set([]);
+    this.selectedTalles.set([]);
+    this.selectedColors.set([]);
+    this.bulkStock.set(10);
+    this.varFilterText.set('');
+    this.varFilterTalle.set('');
+    this.varFilterColorId.set(null);
     this.formError.set('');
+
+
     this.formSuccess.set('');
     this.selectedFile.set(null);
     this.imagePreviewUrl.set('');
@@ -187,6 +262,40 @@ export class Products implements OnInit {
     });
   }
 
+  updateVariantFieldByObject(v: VarianteRequest, field: string, val: any) {
+    this.formError.set('');
+    this.variantes.update(list => {
+      const idx = list.indexOf(v);
+      if (idx === -1) return list;
+
+      const nuevoTalle = field === 'talle' ? val : v.talle;
+      const nuevoColorId = field === 'colorId' ? Number(val) : Number(v.colorId);
+
+      // Check collision with any OTHER variant in the list
+      const colision = list.some((item, i) => 
+        i !== idx && 
+        item.talle.toUpperCase() === nuevoTalle.toUpperCase() && 
+        Number(item.colorId) === nuevoColorId
+      );
+
+      if (colision) {
+        this.formError.set('No se puede cambiar la variante: esa combinación de talle y color ya existe.');
+        return list;
+      }
+
+      const newList = [...list];
+      if (field === 'talle') {
+        newList[idx].talle = val;
+      } else if (field === 'colorId') {
+        newList[idx].colorId = Number(val);
+      } else if (field === 'stock') {
+        newList[idx].stock = Number(val);
+      }
+      return newList;
+    });
+  }
+
+
   editProduct(product: Product) {
     this.editingProductId.set(product.id);
     this.nameField.set(product.nombre);
@@ -200,13 +309,14 @@ export class Products implements OnInit {
     if (product.variantes) {
       this.variantes.set(product.variantes.map(v => ({
         talle: v.talle,
-        colorId: (v.color as any)?.id || 1,
+        colorId: v.color?.id || 1,
         stock: v.stock,
         codigoBarras: v.codigoBarras
       })));
     } else {
       this.variantes.set([]);
     }
+
     this.formError.set('');
     this.formSuccess.set('');
     this.isFormOpen.set(true);
@@ -223,30 +333,103 @@ export class Products implements OnInit {
     else if (field === 'categoryId') this.categoryIdField.set(Number(val));
     else if (field === 'image') this.imageField.set(val);
     else if (field === 'varTalle') this.varTalle.set(val);
-    else if (field === 'varColorId') this.varColorId.set(Number(val));
+    else if (field === 'varColorId') this.varColorId.set(val ? Number(val) : null);
     else if (field === 'varStock') this.varStock.set(Number(val));
   }
 
+  toggleTalle(talle: string) {
+    this.selectedTalles.update(list =>
+      list.includes(talle) ? list.filter(t => t !== talle) : [...list, talle]
+    );
+  }
+
+  toggleColorSelection(colorId: number) {
+    this.selectedColors.update(list =>
+      list.includes(colorId) ? list.filter(id => id !== colorId) : [...list, colorId]
+    );
+  }
+
+  generarCombinaciones() {
+    const talles = this.selectedTalles();
+    const colorIds = this.selectedColors();
+    const stock = this.bulkStock();
+
+    if (talles.length === 0 || colorIds.length === 0) {
+      this.formError.set('Debe seleccionar al menos un talle y un color para generar combinaciones.');
+      return;
+    }
+
+    let countNuevas = 0;
+    let countExistentes = 0;
+
+    this.variantes.update(existing => {
+      const nuevas = [...existing];
+      for (const talle of talles) {
+        for (const colorId of colorIds) {
+          const existe = nuevas.some(v => v.talle.toUpperCase() === talle.toUpperCase() && Number(v.colorId) === colorId);
+          if (!existe) {
+            nuevas.push({
+              talle,
+              colorId,
+              stock: stock >= 0 ? stock : 0
+            });
+            countNuevas++;
+          } else {
+            countExistentes++;
+          }
+        }
+      }
+      return nuevas;
+    });
+
+    this.selectedTalles.set([]);
+    this.selectedColors.set([]);
+    
+    if (countExistentes > 0) {
+      if (countNuevas === 0) {
+        this.formError.set('Todas las combinaciones seleccionadas ya existen en la lista.');
+      } else {
+        this.formError.set('Algunas combinaciones seleccionadas ya existen y fueron omitidas.');
+      }
+    } else {
+      this.formError.set('');
+    }
+  }
+
   addVariante() {
+    this.formError.set('');
     const talle = this.varTalle().trim();
     const colorId = this.varColorId();
     const stock = this.varStock();
 
-    if (!talle || !colorId) {
+    if (!talle || colorId == null) {
       this.formError.set('Talle y color son obligatorios para la variante.');
+      return;
+    }
+
+    // Check duplicate
+    const exists = this.variantes().some(v => 
+      v.talle.toUpperCase() === talle.toUpperCase() && Number(v.colorId) === colorId
+    );
+    if (exists) {
+      this.formError.set('La variante con este talle y color ya existe en la lista.');
       return;
     }
 
     this.variantes.update(list => [...list, { talle, colorId, stock }]);
     this.varTalle.set('');
-    this.varColorId.set(1);
+    this.varColorId.set(null);
     this.varStock.set(0);
-    this.formError.set('');
   }
 
   removeVariante(index: number) {
     this.variantes.update(list => list.filter((_, i) => i !== index));
   }
+
+  removeVarianteObject(v: VarianteRequest) {
+    this.variantes.update(list => list.filter(item => item !== v));
+  }
+
 
   async onSubmitProduct(event: Event) {
     event.preventDefault();
@@ -258,12 +441,33 @@ export class Products implements OnInit {
       this.formError.set('El nombre de la prenda es obligatorio y no puede estar vacío.');
       return;
     }
+    if (this.nameField().trim().length < 3) {
+      this.formError.set('El nombre de la prenda debe tener al menos 3 caracteres.');
+      return;
+    }
     if (this.priceField() == null || this.priceField() <= 0) {
       this.formError.set('El precio debe ser un número válido mayor a 0.');
       return;
     }
     if (!this.descField() || !this.descField().trim()) {
       this.formError.set('La descripción es obligatoria y no puede estar vacía.');
+      return;
+    }
+    if (this.descField().trim().length < 10) {
+      this.formError.set('La descripción debe tener al menos 10 caracteres.');
+      return;
+    }
+    if (!this.imagePreviewUrl() && !this.imageField()) {
+      this.formError.set('Debe cargar una imagen para la prenda antes de guardarla.');
+      return;
+    }
+    if (this.variantes().length === 0) {
+      this.formError.set('El producto debe tener al menos una variante de talle/color.');
+      return;
+    }
+    const uniqueCount = new Set(this.variantes().map(v => `${v.talle.toUpperCase()}-${v.colorId}`)).size;
+    if (uniqueCount < this.variantes().length) {
+      this.formError.set('La lista de variantes contiene combinaciones de talle y color duplicadas.');
       return;
     }
 
@@ -333,9 +537,24 @@ export class Products implements OnInit {
     }
   }
 
+  getUniqueTalles(product: Product): string[] {
+    if (!product.variantes) return [];
+    const talles = product.variantes.map(v => v.talle);
+    return [...new Set(talles)];
+  }
+
+  getUniqueColors(product: Product): ColorResponse[] {
+    if (!product.variantes) return [];
+    const colors = product.variantes.map(v => v.color).filter(Boolean);
+    const uniqueMap = new Map<number, ColorResponse>();
+    colors.forEach(c => uniqueMap.set(c.id, c));
+    return Array.from(uniqueMap.values());
+  }
+
   getTotalStock(product: Product): number {
     return this.productService.getTotalStock(product);
   }
+
 
   getImageUrl(product: Product): string {
     return this.productService.getImageUrl(product);
@@ -356,18 +575,8 @@ export class Products implements OnInit {
   }
 
   getColorName(colorId: number): string {
-    const colors: { [key: number]: string } = {
-      1: 'Negro',
-      2: 'Blanco',
-      3: 'Rojo',
-      4: 'Azul',
-      5: 'Verde',
-      6: 'Gris',
-      7: 'Beige',
-      8: 'Bordó',
-      9: 'Celeste',
-      10: 'Rosa'
-    };
-    return colors[colorId] || 'Desconocido';
+    const color = this.colores().find(c => c.id === colorId);
+    return color ? color.nombre : 'Desconocido';
   }
+
 }
