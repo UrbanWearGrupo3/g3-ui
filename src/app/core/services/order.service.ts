@@ -70,7 +70,7 @@ export class OrderService {
 
   getOrders(): Observable<Order[]> {
     const user = this.userService.currentUser();
-    if (user && user.role === 'admin') {
+    if (user && (user.role === 'admin' || user.role === 'super_user')) {
       return this.http.get<any[]>(`${this.apiUrl}/pedidos`).pipe(
         map(pedidos => pedidos.map(p => this.mapBackendOrderToFrontend(p)))
       );

@@ -1,5 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { UserService } from '../../core/services/user.service';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -13,10 +13,19 @@ import { CommonModule } from '@angular/common';
 export class LoginComponent {
   private readonly userService = inject(UserService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
 
   email = signal<string>('');
   password = signal<string>('');
   error = signal<string>('');
+  infoMessage = signal<string>('');
+
+  constructor() {
+    const msg = this.route.snapshot.queryParamMap.get('message');
+    if (msg) {
+      this.infoMessage.set(msg);
+    }
+  }
 
   updateEmail(event: Event) {
     const value = (event.target as HTMLInputElement).value;

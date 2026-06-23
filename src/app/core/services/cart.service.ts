@@ -1,6 +1,7 @@
 import { Injectable, signal, computed, effect, inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformServer } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
 import { Product } from '../../models/product';
 import { UserService } from './user.service';
 
@@ -19,9 +20,21 @@ export class CartService {
   private readonly http = inject(HttpClient);
   private readonly platformId = inject(PLATFORM_ID);
   private readonly userService = inject(UserService);
+  private readonly router = inject(Router);
 
   private readonly _cartItems = signal<CartItem[]>([]);
   readonly cartItems = this._cartItems.asReadonly();
+
+  readonly toastMessage = signal<string | null>(null);
+
+  showToast(msg: string) {
+    this.toastMessage.set(msg);
+    setTimeout(() => {
+      if (this.toastMessage() === msg) {
+        this.toastMessage.set(null);
+      }
+    }, 4000);
+  }
 
   readonly shipping = 1500;
   private backendCartId: number | null = null;
@@ -137,7 +150,7 @@ export class CartService {
     if (index >= items.length) {
       try {
         localStorage.removeItem(this.STORAGE_KEY);
-      } catch (e) {}
+      } catch (e) { }
       this.fetchBackendItems();
       return;
     }
@@ -229,6 +242,11 @@ export class CartService {
   }
 
   addToCart(product: Product, quantity = 1, color?: string, talle?: string) {
+    if (!this.userService.currentUser()) {
+      this.showToast('Antes de realizar una compra necesitamos que te registres.');
+      return;
+    }
+
     let maxStock = 999;
     if (product.variantes && color && talle) {
       const variant = product.variantes.find(v => v.color && v.color.nombre === color && v.talle === talle);
@@ -239,9 +257,9 @@ export class CartService {
       maxStock = this.getTotalStock(product);
     }
 
-    const existing = this._cartItems().find(item => 
-      item.id === product.id && 
-      (!color || item.selectedColor === color) && 
+    const existing = this._cartItems().find(item =>
+      item.id === product.id &&
+      (!color || item.selectedColor === color) &&
       (!talle || item.selectedTalle === talle)
     );
     const currentQty = existing ? existing.quantity : 0;
@@ -264,16 +282,16 @@ export class CartService {
       });
     } else {
       this._cartItems.update(items => {
-        const existingItem = items.find(item => 
-          item.id === product.id && 
-          (!color || item.selectedColor === color) && 
+        const existingItem = items.find(item =>
+          item.id === product.id &&
+          (!color || item.selectedColor === color) &&
           (!talle || item.selectedTalle === talle)
         );
         if (existingItem) {
           return items.map(item =>
-            (item.id === product.id && 
-             (!color || item.selectedColor === color) && 
-             (!talle || item.selectedTalle === talle))
+            (item.id === product.id &&
+              (!color || item.selectedColor === color) &&
+              (!talle || item.selectedTalle === talle))
               ? { ...item, quantity: Math.min(item.quantity + quantity, maxStock) }
               : item
           );
@@ -327,7 +345,7 @@ export class CartService {
         error: (err) => console.error('Error removing product from backend cart:', err)
       });
     } else {
-      this._cartItems.update(items => items.filter(i => 
+      this._cartItems.update(items => items.filter(i =>
         !(i.id === item.id && i.selectedColor === item.selectedColor && i.selectedTalle === item.selectedTalle)
       ));
     }
