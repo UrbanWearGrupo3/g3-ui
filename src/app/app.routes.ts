@@ -6,6 +6,7 @@ import { LoginComponent } from './pages/login/login';
 import { RegisterComponent } from './pages/register/register';
 import { Home } from './pages/home/home';
 import { Products as UserProducts } from './pages/products/products';
+import { ProductDetail } from './pages/product-detail/product-detail';
 import { Cart } from './pages/cart/cart';
 import { Checkout } from './pages/checkout/checkout';
 import { Dashboard } from './pages/admin/dashboard/dashboard';
@@ -23,6 +24,7 @@ export const routes: Routes = [
       { path: 'login', component: LoginComponent },
       { path: 'register', component: RegisterComponent },
       { path: 'products', component: UserProducts },
+      { path: 'products/:id', component: ProductDetail },
       { path: 'checkout', component: Checkout },
       { path: 'checkout-success', component: CheckoutSuccess },
       { path: 'cart', component: Cart },

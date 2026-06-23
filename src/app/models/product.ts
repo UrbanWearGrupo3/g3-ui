@@ -1,7 +1,14 @@
+export interface ColorInfo {
+  id: number;
+  nombre: string;
+  codigoHex?: string;
+  activo?: boolean;
+}
+
 export interface Variante {
   id: number;
   talle: string;
-  color: string;
+  color: ColorInfo;
   stock: number;
   codigoBarras: string;
 }
