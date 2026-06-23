@@ -168,6 +168,23 @@ export class Products implements OnInit {
   removeSelectedFile() {
     this.selectedFile.set(null);
     this.imagePreviewUrl.set('');
+    this.imageField.set('');
+  }
+
+  updateVariantField(index: number, field: string, event: Event) {
+    const target = event.target as HTMLInputElement | HTMLSelectElement;
+    const val = target.value;
+    this.variantes.update(list => {
+      const newList = [...list];
+      if (field === 'talle') {
+        newList[index].talle = val;
+      } else if (field === 'colorId') {
+        newList[index].colorId = Number(val);
+      } else if (field === 'stock') {
+        newList[index].stock = Number(val);
+      }
+      return newList;
+    });
   }
 
   editProduct(product: Product) {
@@ -235,6 +252,21 @@ export class Products implements OnInit {
     event.preventDefault();
     this.formError.set('');
     this.formSuccess.set('');
+
+    // Validations
+    if (!this.nameField() || !this.nameField().trim()) {
+      this.formError.set('El nombre de la prenda es obligatorio y no puede estar vacío.');
+      return;
+    }
+    if (this.priceField() == null || this.priceField() <= 0) {
+      this.formError.set('El precio debe ser un número válido mayor a 0.');
+      return;
+    }
+    if (!this.descField() || !this.descField().trim()) {
+      this.formError.set('La descripción es obligatoria y no puede estar vacía.');
+      return;
+    }
+
     this.isLoading.set(true);
 
     let finalImageUrl = this.imageField();

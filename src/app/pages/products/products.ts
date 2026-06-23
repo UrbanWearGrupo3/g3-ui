@@ -14,7 +14,7 @@ export class Products implements OnInit {
   products = signal<Product[]>([]);
 
   selectedCategory = signal<string>('Todas');
-  categories = ['Todas', 'Camisetas', 'Sudaderas', 'Zapatillas', 'Accesorios', 'Pantalones', 'Chaquetas'];
+  categories = ['Todas', 'Remera', 'Pantalones', 'Gorras', 'Camperas', 'Accesorios'];
   searchQuery = signal<string>('');
 
   // Pagination

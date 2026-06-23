@@ -61,8 +61,8 @@ export class ProductService {
     return this.http.post<{ url: string }>(`${this.apiUrl}/upload`, formData);
   }
 
-  updateProduct(id: number, request: ProductoRequest): Observable<Product> {
-    return this.http.put<Product>(`${this.apiUrl}/${id}`, request);
+  updateProduct(id: number, request: Partial<ProductoRequest>): Observable<Product> {
+    return this.http.patch<Product>(`${this.apiUrl}/${id}`, request);
   }
 
 
