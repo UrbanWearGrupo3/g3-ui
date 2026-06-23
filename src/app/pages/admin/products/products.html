@@ -186,6 +186,42 @@
     </form>
   </div>
   }
+  <!-- Barra de Filtros de Productos -->
+  <div class="p-5 bg-brand-card-gray border border-brand-border-gray rounded-2xl flex flex-wrap gap-4 items-center">
+    <div class="flex-1 min-w-[200px]">
+      <label for="prod-search-input" class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Buscar por Nombre</label>
+      <input id="prod-search-input" type="text" [value]="searchQuery()" (input)="onFilterChange('search', $event)"
+        placeholder="Ej: Hoodie, Remera, Jean..."
+        class="w-full px-4 py-2.5 bg-black border border-brand-border-gray rounded-xl text-xs text-white focus:outline-none focus:border-brand-red transition-all">
+    </div>
+    <div class="w-full sm:w-auto min-w-[120px]">
+      <label for="prod-filter-cat" class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Categoría</label>
+      <select id="prod-filter-cat" [value]="categoryFilter()" (change)="onFilterChange('category', $event)"
+        class="w-full px-4 py-2.5 bg-black border border-brand-border-gray rounded-xl text-xs text-white focus:outline-none focus:border-brand-red transition-all">
+        <option value="">Todas las Categorías</option>
+        <option value="1">Remera</option>
+        <option value="2">Pantalones</option>
+        <option value="3">Camperas</option>
+        <option value="4">Gorras</option>
+        <option value="5">Accesorios</option>
+      </select>
+    </div>
+    <div class="w-full sm:w-auto min-w-[120px]">
+      <label for="prod-filter-status" class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Estado</label>
+      <select id="prod-filter-status" [value]="statusFilter()" (change)="onFilterChange('status', $event)"
+        class="w-full px-4 py-2.5 bg-black border border-brand-border-gray rounded-xl text-xs text-white focus:outline-none focus:border-brand-red transition-all">
+        <option value="">Todos los Estados</option>
+        <option value="true">Activo</option>
+        <option value="false">Inactivo</option>
+      </select>
+    </div>
+    <div class="w-full sm:w-auto flex items-end pt-5">
+      <button (click)="clearFilters()"
+        class="w-full sm:w-auto px-4 py-2.5 bg-brand-border-gray hover:bg-white text-white hover:text-black font-black text-[10px] uppercase rounded-xl transition-all duration-300 tracking-wider cursor-pointer">
+        Limpiar Filtros
+      </button>
+    </div>
+  </div>
 
   <!-- Loading State -->
   @if (isLoading()) {
@@ -231,6 +267,15 @@
             <td class="py-4 px-6">
               <p class="font-bold text-white">{{ prod.nombre }}</p>
               <p class="text-xs text-brand-text-muted max-w-sm truncate mt-0.5">{{ prod.descripcion }}</p>
+              @if (prod.variantes && prod.variantes.length > 0) {
+              <div class="flex flex-wrap gap-1 mt-1.5">
+                @for (v of prod.variantes; track v.id) {
+                <span class="text-[9px] font-mono text-gray-400 bg-black/40 border border-brand-border-gray/30 px-1.5 py-0.5 rounded" [title]="'Talle: ' + v.talle">
+                  {{ v.codigoBarras }}
+                </span>
+                }
+              </div>
+              }
             </td>
             <td class="py-4 px-6">
               <span
@@ -270,7 +315,7 @@
               </button>
             </td>
             <td class="py-4 px-6">
-              <div class="flex justify-center gap-1">
+              <div class="flex justify-center gap-2 items-center">
                 <button (click)="editProduct(prod)"
                   class="p-2 text-gray-500 hover:text-white rounded-lg hover:bg-white/5 transition-colors cursor-pointer"
                   aria-label="Editar prenda">
@@ -280,15 +325,7 @@
                     </path>
                   </svg>
                 </button>
-                <button (click)="deleteProduct(prod.id)"
-                  class="p-2 text-gray-500 hover:text-brand-red rounded-lg hover:bg-brand-red/5 transition-colors cursor-pointer"
-                  aria-label="Eliminar prenda">
-                  <svg class="h-4.5 w-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
-                    </path>
-                  </svg>
-                </button>
+                <span class="text-[9px] text-gray-650 font-bold uppercase tracking-wider select-none px-1.5 py-0.5 bg-black/40 border border-brand-border-gray/30 rounded">Protegido</span>
               </div>
             </td>
           </tr>

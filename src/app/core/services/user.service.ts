@@ -1,6 +1,6 @@
 import { Injectable, inject, signal, PLATFORM_ID } from '@angular/core';
 import { isPlatformServer } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { map, tap, catchError } from 'rxjs/operators';
 import { User } from '../../models/user';
@@ -130,8 +130,18 @@ export class UserService {
     }
   }
 
-  getUsers(): Observable<User[]> {
-    return this.http.get<any>(`${this.apiUrl}/usuarios`).pipe(
+  getUsers(filters?: { search?: string; rol?: string; activo?: boolean }): Observable<User[]> {
+    let params = new HttpParams();
+    if (filters) {
+      if (filters.search) params = params.set('search', filters.search);
+      if (filters.rol) {
+        const backendRol = filters.rol === 'admin' ? 'ADMIN' : 'CLIENTE';
+        params = params.set('rol', backendRol);
+      }
+      if (filters.activo !== undefined) params = params.set('activo', filters.activo.toString());
+    }
+
+    return this.http.get<any>(`${this.apiUrl}/usuarios`, { params }).pipe(
       map(res => {
         const list = res && res.content ? res.content : (Array.isArray(res) ? res : []);
         return list.map((u: any) => this.mapUser(u));
@@ -194,6 +204,42 @@ export class UserService {
       }),
       catchError(err => {
         console.error('Backend updateProfile error:', err);
+        throw err;
+      })
+    );
+  }
+
+  createUser(user: Omit<User, 'id'> & { password?: string }): Observable<User> {
+    const payload = {
+      nombre: user.firstName,
+      apellido: user.lastName,
+      email: user.email,
+      rol: user.role === 'admin' ? 'ADMIN' : 'CLIENTE',
+      activo: user.activo,
+      password: user.password
+    };
+    return this.http.post<any>(`${this.apiUrl}/usuarios`, payload).pipe(
+      map(res => this.mapUser(res)),
+      catchError(err => {
+        console.error('Backend createUser error:', err);
+        throw err;
+      })
+    );
+  }
+
+  updateUser(id: string, user: Partial<User> & { password?: string }): Observable<User> {
+    const payload: any = {};
+    if (user.firstName !== undefined) payload.nombre = user.firstName;
+    if (user.lastName !== undefined) payload.apellido = user.lastName;
+    if (user.email !== undefined) payload.email = user.email;
+    if (user.role !== undefined) payload.rol = user.role === 'admin' ? 'ADMIN' : 'CLIENTE';
+    if (user.activo !== undefined) payload.activo = user.activo;
+    if (user.password !== undefined && user.password !== '') payload.password = user.password;
+
+    return this.http.put<any>(`${this.apiUrl}/usuarios/${id}`, payload).pipe(
+      map(res => this.mapUser(res)),
+      catchError(err => {
+        console.error('Backend updateUser error:', err);
         throw err;
       })
     );

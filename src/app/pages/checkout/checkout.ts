@@ -1,8 +1,9 @@
 import { Component, inject, signal, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { HttpClientModule } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { MercadoPagoService } from '../../core/services/mercado-pago.service';
 import { Router, RouterLink } from '@angular/router';
-import { CommonModule } from '@angular/common';
 import { CartService } from '../../core/services/cart.service';
 import { OrderService } from '../../core/services/order.service';
 import { UserService } from '../../core/services/user.service';
@@ -10,7 +11,7 @@ import { UserService } from '../../core/services/user.service';
 @Component({
   selector: 'app-checkout',
   standalone: true,
-  imports: [RouterLink, CommonModule, FormsModule],
+  imports: [RouterLink, CommonModule, FormsModule, HttpClientModule],
   templateUrl: './checkout.html',
   styleUrl: './checkout.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -64,8 +65,9 @@ export class Checkout implements OnInit {
           try {
             const pref = await this.mpService.crearPreference(numericId).toPromise();
             if (pref && (pref.sandboxInitPoint || pref.initPoint)) {
-              // Redirect user to Mercado Pago checkout
-              window.location.href = pref.sandboxInitPoint || pref.initPoint;
+              // Render Mercado Pago checkout UI
+              this.mpService.renderCheckout(pref.preferenceId, 'mp-checkout-container');
+              this.isSubmitting.set(false);
               return;
             }
           } catch (e) {

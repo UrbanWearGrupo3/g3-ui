@@ -2,10 +2,12 @@ import { Component, inject, signal } from '@angular/core';
 
 import { Router, RouterLink } from '@angular/router';
 import { UserService } from '../../core/services/user.service';
+import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-register',
-  imports: [RouterLink],
+  imports: [RouterLink, FormsModule, CommonModule],
   templateUrl: './register.html',
   styleUrl: './register.css',
   standalone: true,

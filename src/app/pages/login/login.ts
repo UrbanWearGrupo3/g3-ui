@@ -1,10 +1,12 @@
 import { Component, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { UserService } from '../../core/services/user.service';
+import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-login',
-  imports: [RouterLink],
+  imports: [RouterLink, FormsModule, CommonModule],
   templateUrl: './login.html',
   styleUrl: './login.css',
 })
@@ -33,9 +35,9 @@ export class LoginComponent {
     this.userService.login(this.email(), this.password()).subscribe({
       next: (success) => {
         if (success) {
-        const user = this.userService.currentUser();
-        console.log('LoginComponent: logged in user', user);
-        if (user?.role === 'admin') {
+          const user = this.userService.currentUser();
+          console.log('LoginComponent: logged in user', user);
+          if (user?.role === 'admin') {
             this.router.navigate(['/admin']);
           } else {
             this.router.navigate(['/']);

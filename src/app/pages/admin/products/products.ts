@@ -1,12 +1,13 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { DecimalPipe } from '@angular/common';
+import { DecimalPipe, CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
 import { ProductService } from '../../../core/services/product.service';
 import { Product, ProductoRequest, VarianteRequest } from '../../../models/product';
 
 @Component({
   selector: 'app-products',
-  imports: [DecimalPipe],
+  imports: [DecimalPipe, CommonModule, FormsModule],
   templateUrl: './products.html',
   styleUrl: './products.css',
 })
@@ -45,16 +46,34 @@ export class Products implements OnInit {
   totalPages = signal<number>(0);
   totalElements = signal<number>(0);
 
+  // Product Filter States
+  searchQuery = signal<string>('');
+  categoryFilter = signal<string>('');
+  statusFilter = signal<string>('');
+
   ngOnInit(): void {
     this.loadProducts();
   }
 
   loadProducts() {
     this.isLoading.set(true);
-    this.productService.getProducts({
+    const filters: any = {
       page: this.currentPage(),
       size: 20
-    }).subscribe({
+    };
+
+    const query = this.searchQuery().trim();
+    if (query) filters.nombre = query;
+
+    const catId = this.categoryFilter();
+    if (catId) filters.categoriaId = Number(catId);
+
+    const activo = this.statusFilter();
+    if (activo !== '') {
+      filters.activo = activo === 'true';
+    }
+
+    this.productService.getProducts(filters).subscribe({
       next: (page) => {
         this.products.set(page.content);
         this.totalPages.set(page.totalPages);
@@ -69,14 +88,7 @@ export class Products implements OnInit {
   }
 
   deleteProduct(id: number): void {
-    if (confirm('¿Estás seguro de que deseas eliminar este producto?')) {
-      this.productService.deleteProduct(id).subscribe({
-        next: () => {
-          this.products.update(items => items.filter(p => p.id !== id));
-        },
-        error: (err) => console.error('Error deleting product:', err)
-      });
-    }
+    throw new Error('No está permitido eliminar productos. Utilice la desactivación en su lugar.');
   }
 
   toggleActivo(id: number, currentActivo: boolean): void {
@@ -88,6 +100,28 @@ export class Products implements OnInit {
       },
       error: (err) => console.error('Error toggling active:', err)
     });
+  }
+
+  onFilterChange(field: string, event: Event): void {
+    const target = event.target as HTMLInputElement | HTMLSelectElement;
+    const val = target.value;
+    if (field === 'search') {
+      this.searchQuery.set(val);
+    } else if (field === 'category') {
+      this.categoryFilter.set(val);
+    } else if (field === 'status') {
+      this.statusFilter.set(val);
+    }
+    this.currentPage.set(0);
+    this.loadProducts();
+  }
+
+  clearFilters(): void {
+    this.searchQuery.set('');
+    this.categoryFilter.set('');
+    this.statusFilter.set('');
+    this.currentPage.set(0);
+    this.loadProducts();
   }
 
   toggleForm(isOpen: boolean) {
