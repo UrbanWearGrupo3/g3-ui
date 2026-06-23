@@ -63,12 +63,19 @@ export class UserService {
   }
 
   private mapUser(res: any): User {
+    let mappedRole: 'super_user' | 'admin' | 'user' = 'user';
+    const rawRol = res.rol?.toLowerCase();
+    if (rawRol === 'super_user') {
+      mappedRole = 'super_user';
+    } else if (rawRol === 'admin') {
+      mappedRole = 'admin';
+    }
     return {
       id: res.id ? res.id.toString() : '',
       email: res.email,
       firstName: res.nombre,
       lastName: res.apellido,
-      role: res.rol?.toLowerCase() === 'admin' ? 'admin' : 'user',
+      role: mappedRole,
       activo: res.activo !== undefined ? res.activo : true,
       createdAt: res.fechaCreacion ? new Date(res.fechaCreacion) : undefined
     };
@@ -135,7 +142,12 @@ export class UserService {
     if (filters) {
       if (filters.search) params = params.set('search', filters.search);
       if (filters.rol) {
-        const backendRol = filters.rol === 'admin' ? 'ADMIN' : 'CLIENTE';
+        let backendRol = 'CLIENTE';
+        if (filters.rol === 'super_user') {
+          backendRol = 'SUPER_USER';
+        } else if (filters.rol === 'admin') {
+          backendRol = 'ADMIN';
+        }
         params = params.set('rol', backendRol);
       }
       if (filters.activo !== undefined) params = params.set('activo', filters.activo.toString());
@@ -162,7 +174,7 @@ export class UserService {
     );
   }
 
-  changeRol(id: string, rol: 'ADMIN' | 'CLIENTE'): Observable<User> {
+  changeRol(id: string, rol: 'SUPER_USER' | 'ADMIN' | 'CLIENTE'): Observable<User> {
     return this.http.patch<any>(`${this.apiUrl}/usuarios/${id}/rol`, null, {
       params: { rol }
     }).pipe(
@@ -210,11 +222,17 @@ export class UserService {
   }
 
   createUser(user: Omit<User, 'id'> & { password?: string }): Observable<User> {
+    let backendRol = 'CLIENTE';
+    if (user.role === 'super_user') {
+      backendRol = 'SUPER_USER';
+    } else if (user.role === 'admin') {
+      backendRol = 'ADMIN';
+    }
     const payload = {
       nombre: user.firstName,
       apellido: user.lastName,
       email: user.email,
-      rol: user.role === 'admin' ? 'ADMIN' : 'CLIENTE',
+      rol: backendRol,
       activo: user.activo,
       password: user.password
     };
@@ -232,7 +250,15 @@ export class UserService {
     if (user.firstName !== undefined) payload.nombre = user.firstName;
     if (user.lastName !== undefined) payload.apellido = user.lastName;
     if (user.email !== undefined) payload.email = user.email;
-    if (user.role !== undefined) payload.rol = user.role === 'admin' ? 'ADMIN' : 'CLIENTE';
+    if (user.role !== undefined) {
+      let backendRol = 'CLIENTE';
+      if (user.role === 'super_user') {
+        backendRol = 'SUPER_USER';
+      } else if (user.role === 'admin') {
+        backendRol = 'ADMIN';
+      }
+      payload.rol = backendRol;
+    }
     if (user.activo !== undefined) payload.activo = user.activo;
     if (user.password !== undefined && user.password !== '') payload.password = user.password;
 

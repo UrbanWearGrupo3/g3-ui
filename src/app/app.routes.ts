@@ -12,6 +12,7 @@ import { Dashboard } from './pages/admin/dashboard/dashboard';
 import { Products as AdminProducts } from './pages/admin/products/products';
 import { Users } from './pages/admin/users/users';
 import { AdminGuard } from './core/guards/admin.guard';
+import { SuperUserGuard } from './core/guards/superuser.guard';
 
 export const routes: Routes = [
   {
@@ -24,7 +25,7 @@ export const routes: Routes = [
       { path: 'products', component: UserProducts },
       { path: 'checkout', component: Checkout },
       { path: 'checkout-success', component: CheckoutSuccess },
-    { path: 'cart', component: Cart },
+      { path: 'cart', component: Cart },
     ]
   },
   {
@@ -32,11 +33,12 @@ export const routes: Routes = [
     component: AdminLayout,
     canActivate: [AdminGuard],
     children: [
-      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-      { path: 'dashboard', component: Dashboard },
+      { path: '', redirectTo: 'products', pathMatch: 'full' },
+      { path: 'dashboard', component: Dashboard, canActivate: [SuperUserGuard] },
       { path: 'products', component: AdminProducts },
-      { path: 'users', component: Users }
+      { path: 'users', component: Users, canActivate: [SuperUserGuard] }
     ]
   },
   { path: '**', redirectTo: '' }
 ];
+

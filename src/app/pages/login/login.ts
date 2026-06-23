@@ -37,7 +37,7 @@ export class LoginComponent {
         if (success) {
           const user = this.userService.currentUser();
           console.log('LoginComponent: logged in user', user);
-          if (user?.role === 'admin') {
+          if (user?.role === 'admin' || user?.role === 'super_user') {
             this.router.navigate(['/admin']);
           } else {
             this.router.navigate(['/']);

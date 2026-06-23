@@ -20,7 +20,7 @@ export class Users implements OnInit {
   lastNameField = signal<string>('');
   emailField = signal<string>('');
   passwordField = signal<string>('');
-  roleField = signal<'admin' | 'user'>('user');
+  roleField = signal<'super_user' | 'admin' | 'user'>('user');
   activoField = signal<boolean>(true);
   editingUserId = signal<string | null>(null);
 
@@ -114,7 +114,7 @@ export class Users implements OnInit {
     else if (field === 'lastName') this.lastNameField.set(val);
     else if (field === 'email') this.emailField.set(val);
     else if (field === 'password') this.passwordField.set(val);
-    else if (field === 'role') this.roleField.set(val as 'admin' | 'user');
+    else if (field === 'role') this.roleField.set(val as 'super_user' | 'admin' | 'user');
     else if (field === 'activo') {
       const checkbox = target as HTMLInputElement;
       this.activoField.set(checkbox.checked);

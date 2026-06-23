@@ -1,5 +1,5 @@
 <div class="space-y-8">
-  <!-- Cabecera Gestión Inventario -->
+
   <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
     <div>
       <p class="text-xs text-brand-red font-black tracking-widest uppercase mb-1">MANTENIMIENTO DE STOCK</p>
@@ -13,12 +13,14 @@
     </button>
     }
   </div>
-  @if (isFormOpen()) {
+
+  @if (isFormOpen()) {
   <!-- Backdrop Overlay -->
-  <div class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+  <div class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center sm:p-6 overflow-y-auto  ">
     <!-- Modal Dialog Card -->
-    <div class="bg-brand-card-gray border border-brand-border-gray rounded-3xl w-full max-w-4xl p-6 sm:p-8 space-y-6 shadow-2xl relative max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-200">
-      
+    <div
+      class="bg-brand-card-gray border border-brand-border-gray rounded-3xl w-full max-w-4xl p-6 sm:p-8 space-y-6 shadow-2xl relative max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-200">
+
       <div class="flex justify-between items-center border-b border-brand-border-gray pb-4">
         <h3 class="font-black text-white uppercase tracking-wider text-sm">
           {{ editingProductId() ? 'Editar Prenda' : 'Nuevo Drop Streetwear' }}
@@ -49,14 +51,18 @@
         <div class="lg:col-span-2 space-y-5">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label for="prod-name" class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Nombre de la Prenda</label>
+              <label for="prod-name"
+                class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Nombre de la
+                Prenda</label>
               <input id="prod-name" type="text" required [value]="nameField()" (input)="updateFormField('name', $event)"
                 placeholder="Ej: Sudadera Hoodie Black Wave"
                 class="w-full px-4 py-3 bg-black border border-brand-border-gray rounded-xl text-sm text-white focus:outline-none focus:border-brand-red transition-all">
             </div>
             <div>
-              <label for="prod-cat" class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Categoría</label>
-              <select id="prod-cat" required [value]="categoryIdField()" (change)="updateFormField('categoryId', $event)"
+              <label for="prod-cat"
+                class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Categoría</label>
+              <select id="prod-cat" required [value]="categoryIdField()"
+                (change)="updateFormField('categoryId', $event)"
                 class="w-full px-4 py-3 bg-black border border-brand-border-gray rounded-xl text-sm text-white focus:outline-none focus:border-brand-red transition-all">
                 <option value="1">Remera</option>
                 <option value="2">Pantalones</option>
@@ -69,13 +75,15 @@
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label for="prod-price" class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Precio ($)</label>
+              <label for="prod-price"
+                class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Precio ($)</label>
               <input id="prod-price" type="number" required [value]="priceField()"
                 (input)="updateFormField('price', $event)" min="0.01" step="0.01"
                 class="w-full px-4 py-3 bg-black border border-brand-border-gray rounded-xl text-sm text-white focus:outline-none focus:border-brand-red transition-all">
             </div>
             <div>
-              <label for="prod-desc" class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Descripción</label>
+              <label for="prod-desc"
+                class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Descripción</label>
               <textarea id="prod-desc" required rows="1" [value]="descField()" (input)="updateFormField('desc', $event)"
                 placeholder="Detalles sobre costura, gramaje, calce..."
                 class="w-full px-4 py-3 bg-black border border-brand-border-gray rounded-xl text-sm text-white focus:outline-none focus:border-brand-red transition-all"></textarea>
@@ -88,58 +96,60 @@
 
             <!-- Added variantes list -->
             @if (variantes().length > 0) {
-              <div class="space-y-2 max-h-60 overflow-y-auto pr-1">
-                @for (v of variantes(); track $index) {
-                  <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 items-center p-3 bg-black border border-brand-border-gray rounded-xl">
-                    <!-- Talle selection -->
-                    <select [value]="v.talle" (change)="updateVariantField($index, 'talle', $event)"
-                      class="px-2.5 py-2 bg-brand-card-gray border border-brand-border-gray rounded-lg text-xs text-white focus:outline-none focus:border-brand-red transition-all cursor-pointer">
-                      <option value="S">S</option>
-                      <option value="M">M</option>
-                      <option value="L">L</option>
-                      <option value="XL">XL</option>
-                      <option value="U">U (Único)</option>
-                    </select>
+            <div class="space-y-2 max-h-60 overflow-y-auto pr-1">
+              @for (v of variantes(); track $index) {
+              <div
+                class="grid grid-cols-1 sm:grid-cols-4 gap-3 items-center p-3 bg-black border border-brand-border-gray rounded-xl">
+                <!-- Talle selection -->
+                <select [value]="v.talle" (change)="updateVariantField($index, 'talle', $event)"
+                  class="px-2.5 py-2 bg-brand-card-gray border border-brand-border-gray rounded-lg text-xs text-white focus:outline-none focus:border-brand-red transition-all cursor-pointer">
+                  <option value="S">S</option>
+                  <option value="M">M</option>
+                  <option value="L">L</option>
+                  <option value="XL">XL</option>
+                  <option value="U">U (Único)</option>
+                </select>
 
-                    <!-- Color selection -->
-                    <select [value]="v.colorId" (change)="updateVariantField($index, 'colorId', $event)"
-                      class="px-2.5 py-2 bg-brand-card-gray border border-brand-border-gray rounded-lg text-xs text-white focus:outline-none focus:border-brand-red transition-all cursor-pointer">
-                      <option value="1">Negro</option>
-                      <option value="2">Blanco</option>
-                      <option value="3">Rojo</option>
-                      <option value="4">Azul</option>
-                      <option value="5">Verde</option>
-                      <option value="6">Gris</option>
-                      <option value="7">Beige</option>
-                      <option value="8">Bordó</option>
-                      <option value="9">Celeste</option>
-                      <option value="10">Rosa</option>
-                    </select>
+                <!-- Color selection -->
+                <select [value]="v.colorId" (change)="updateVariantField($index, 'colorId', $event)"
+                  class="px-2.5 py-2 bg-brand-card-gray border border-brand-border-gray rounded-lg text-xs text-white focus:outline-none focus:border-brand-red transition-all cursor-pointer">
+                  <option value="1">Negro</option>
+                  <option value="2">Blanco</option>
+                  <option value="3">Rojo</option>
+                  <option value="4">Azul</option>
+                  <option value="5">Verde</option>
+                  <option value="6">Gris</option>
+                  <option value="7">Beige</option>
+                  <option value="8">Bordó</option>
+                  <option value="9">Celeste</option>
+                  <option value="10">Rosa</option>
+                </select>
 
-                    <!-- Stock input -->
-                    <div class="flex items-center gap-1.5">
-                      <span class="text-[10px] text-gray-500 uppercase font-bold">Stock:</span>
-                      <input type="number" [value]="v.stock" (input)="updateVariantField($index, 'stock', $event)" min="0"
-                        class="w-full px-2 py-2 bg-brand-card-gray border border-brand-border-gray rounded-lg text-xs text-white focus:outline-none focus:border-brand-red font-bold text-center">
-                    </div>
+                <!-- Stock input -->
+                <div class="flex items-center gap-1.5">
+                  <span class="text-[10px] text-gray-500 uppercase font-bold">Stock:</span>
+                  <input type="number" [value]="v.stock" (input)="updateVariantField($index, 'stock', $event)" min="0"
+                    class="w-full px-2 py-2 bg-brand-card-gray border border-brand-border-gray rounded-lg text-xs text-white focus:outline-none focus:border-brand-red font-bold text-center">
+                </div>
 
-                    <div class="flex items-center justify-between gap-2">
-                      <span class="text-[9px] font-mono text-gray-500 select-all" [title]="v.codigoBarras || 'Nueva'">
-                        {{ v.codigoBarras ? v.codigoBarras : 'NUEVA' }}
-                      </span>
+                <div class="flex items-center justify-between gap-2">
+                  <span class="text-[9px] font-mono text-gray-500 select-all" [title]="v.codigoBarras || 'Nueva'">
+                    {{ v.codigoBarras ? v.codigoBarras : 'NUEVA' }}
+                  </span>
 
-                      <button type="button" (click)="removeVariante($index)"
-                        class="p-2 text-gray-500 hover:text-brand-red transition-colors cursor-pointer"
-                        title="Eliminar variante">
-                        <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                }
+                  <button type="button" (click)="removeVariante($index)"
+                    class="p-2 text-gray-500 hover:text-brand-red transition-colors cursor-pointer"
+                    title="Eliminar variante">
+                    <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                      </path>
+                    </svg>
+                  </button>
+                </div>
               </div>
+              }
+            </div>
             }
 
             <!-- Add variante form -->
@@ -166,8 +176,8 @@
                 <option value="9">Celeste</option>
                 <option value="10">Rosa</option>
               </select>
-              <input type="number" [value]="varStock()" (input)="updateFormField('varStock', $event)" placeholder="Stock"
-                min="0"
+              <input type="number" [value]="varStock()" (input)="updateFormField('varStock', $event)"
+                placeholder="Stock" min="0"
                 class="px-3 py-2.5 bg-black border border-brand-border-gray rounded-xl text-sm text-white focus:outline-none focus:border-brand-red transition-all">
               <button type="button" (click)="addVariante()"
                 class="px-4 py-2.5 bg-brand-border-gray hover:bg-brand-red text-white hover:text-black font-bold text-xs uppercase rounded-xl transition-all duration-300 cursor-pointer">
@@ -191,41 +201,45 @@
         <!-- Right side column (Image Preview) -->
         <div class="lg:col-span-1 space-y-4">
           <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider">Imagen de la Prenda</label>
-          
-          <div class="relative bg-black border-2 border-dashed border-brand-border-gray hover:border-brand-red rounded-2xl overflow-hidden transition-all duration-300 min-h-[300px] flex flex-col items-center justify-center p-4 text-center group">
+
+          <div
+            class="relative bg-black border-2 border-dashed border-brand-border-gray hover:border-brand-red rounded-2xl overflow-hidden transition-all duration-300 min-h-[300px] flex flex-col items-center justify-center p-4 text-center group">
             @if (imagePreviewUrl()) {
-              <!-- Large image preview -->
-              <img [src]="imagePreviewUrl()" class="absolute inset-0 w-full h-full object-cover z-0">
-              <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent z-10"></div>
-              
-              <!-- Overlay controls -->
-              <div class="relative z-20 mt-auto w-full flex flex-col items-center gap-2">
-                <button type="button" (click)="removeSelectedFile()"
-                  class="px-4 py-2 bg-brand-red hover:bg-white text-black hover:text-black text-[10px] font-black uppercase rounded-xl transition-all duration-300 shadow-lg cursor-pointer">
-                  Cambiar Imagen
-                </button>
-              </div>
+            <!-- Large image preview -->
+            <img [src]="imagePreviewUrl()" class="absolute inset-0 w-full h-full object-cover z-0">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent z-10"></div>
+
+            <!-- Overlay controls -->
+            <div class="relative z-20 mt-auto w-full flex flex-col items-center gap-2">
+              <button type="button" (click)="removeSelectedFile()"
+                class="px-4 py-2 bg-brand-red hover:bg-white text-black hover:text-black text-[10px] font-black uppercase rounded-xl transition-all duration-300 shadow-lg cursor-pointer">
+                Cambiar Imagen
+              </button>
+            </div>
             } @else {
-              <!-- Upload placeholder -->
-              <input id="prod-file" type="file" accept="image/*" (change)="onFileSelected($event)" class="hidden">
-              <label for="prod-file" class="flex flex-col items-center justify-center w-full h-full py-8 cursor-pointer group">
-                <div class="p-4 bg-brand-card-gray border border-brand-border-gray rounded-full text-brand-red group-hover:scale-110 transition-transform duration-300 mb-3">
-                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
-                  </svg>
-                </div>
-                <span class="text-sm font-bold text-white mb-1">Cargar Foto de Prenda</span>
-                <span class="text-xs text-brand-text-muted">Soporta PNG, JPG o WEBP</span>
-              </label>
+            <!-- Upload placeholder -->
+            <input id="prod-file" type="file" accept="image/*" (change)="onFileSelected($event)" class="hidden">
+            <label for="prod-file"
+              class="flex flex-col items-center justify-center w-full h-full py-8 cursor-pointer group">
+              <div
+                class="p-4 bg-brand-card-gray border border-brand-border-gray rounded-full text-brand-red group-hover:scale-110 transition-transform duration-300 mb-3">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                </svg>
+              </div>
+              <span class="text-sm font-bold text-white mb-1">Cargar Foto de Prenda</span>
+              <span class="text-xs text-brand-text-muted">Soporta PNG, JPG o WEBP</span>
+            </label>
             }
           </div>
-          
+
           @if (isUploadingImage()) {
-            <div class="flex items-center gap-2 px-3 py-2 bg-brand-red/10 border border-brand-red/30 rounded-xl">
-              <div class="w-3.5 h-3.5 border border-brand-red border-t-transparent rounded-full animate-spin"></div>
-              <span class="text-[10px] text-brand-red font-black uppercase tracking-widest animate-pulse">Subiendo a Supabase...</span>
-            </div>
+          <div class="flex items-center gap-2 px-3 py-2 bg-brand-red/10 border border-brand-red/30 rounded-xl">
+            <div class="w-3.5 h-3.5 border border-brand-red border-t-transparent rounded-full animate-spin"></div>
+            <span class="text-[10px] text-brand-red font-black uppercase tracking-widest animate-pulse">Subiendo a
+              Supabase...</span>
+          </div>
           }
         </div>
       </form>
@@ -235,13 +249,15 @@
   <!-- Barra de Filtros de Productos -->
   <div class="p-5 bg-brand-card-gray border border-brand-border-gray rounded-2xl flex flex-wrap gap-4 items-center">
     <div class="flex-1 min-w-[200px]">
-      <label for="prod-search-input" class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Buscar por Nombre</label>
+      <label for="prod-search-input"
+        class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Buscar por Nombre</label>
       <input id="prod-search-input" type="text" [value]="searchQuery()" (input)="onFilterChange('search', $event)"
         placeholder="Ej: Hoodie, Remera, Jean..."
         class="w-full px-4 py-2.5 bg-black border border-brand-border-gray rounded-xl text-xs text-white focus:outline-none focus:border-brand-red transition-all">
     </div>
     <div class="w-full sm:w-auto min-w-[120px]">
-      <label for="prod-filter-cat" class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Categoría</label>
+      <label for="prod-filter-cat"
+        class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Categoría</label>
       <select id="prod-filter-cat" [value]="categoryFilter()" (change)="onFilterChange('category', $event)"
         class="w-full px-4 py-2.5 bg-black border border-brand-border-gray rounded-xl text-xs text-white focus:outline-none focus:border-brand-red transition-all">
         <option value="">Todas las Categorías</option>
@@ -253,7 +269,8 @@
       </select>
     </div>
     <div class="w-full sm:w-auto min-w-[120px]">
-      <label for="prod-filter-status" class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Estado</label>
+      <label for="prod-filter-status"
+        class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Estado</label>
       <select id="prod-filter-status" [value]="statusFilter()" (change)="onFilterChange('status', $event)"
         class="w-full px-4 py-2.5 bg-black border border-brand-border-gray rounded-xl text-xs text-white focus:outline-none focus:border-brand-red transition-all">
         <option value="">Todos los Estados</option>
@@ -316,7 +333,9 @@
               @if (prod.variantes && prod.variantes.length > 0) {
               <div class="flex flex-wrap gap-1 mt-1.5">
                 @for (v of prod.variantes; track v.id) {
-                <span class="text-[9px] font-mono text-gray-400 bg-black/40 border border-brand-border-gray/30 px-1.5 py-0.5 rounded" [title]="'Talle: ' + v.talle">
+                <span
+                  class="text-[9px] font-mono text-gray-400 bg-black/40 border border-brand-border-gray/30 px-1.5 py-0.5 rounded"
+                  [title]="'Talle: ' + v.talle">
                   {{ v.codigoBarras }}
                 </span>
                 }
@@ -371,7 +390,8 @@
                     </path>
                   </svg>
                 </button>
-                <span class="text-[9px] text-gray-650 font-bold uppercase tracking-wider select-none px-1.5 py-0.5 bg-black/40 border border-brand-border-gray/30 rounded">Protegido</span>
+                <span
+                  class="text-[9px] text-gray-650 font-bold uppercase tracking-wider select-none px-1.5 py-0.5 bg-black/40 border border-brand-border-gray/30 rounded">Protegido</span>
               </div>
             </td>
           </tr>

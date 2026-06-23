@@ -5,17 +5,17 @@ import { UserService } from '../services/user.service';
 @Injectable({
   providedIn: 'root'
 })
-export class AdminGuard implements CanActivate {
+export class SuperUserGuard implements CanActivate {
   constructor(private userService: UserService, private router: Router) {}
 
   canActivate(): boolean {
     const user = this.userService.currentUser();
-    console.log('AdminGuard: currentUser', user);
-    if (user && (user.role === 'admin' || user.role === 'super_user')) {
+    console.log('SuperUserGuard: currentUser', user);
+    if (user && user.role === 'super_user') {
       return true;
     }
-    // Not authorized, redirect to login or home
-    this.router.navigate(['/login']);
+    // Not authorized to manage users, redirect to admin products page
+    this.router.navigate(['/admin/products']);
     return false;
   }
 }

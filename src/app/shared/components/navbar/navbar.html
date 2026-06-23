@@ -21,7 +21,7 @@
         class="text-gray-300 hover:text-white transition-colors duration-200 uppercase">
         Catálogo
       </a>
-      @if (userService.currentUser()?.role === 'admin') {
+      @if (userService.currentUser()?.role === 'admin' || userService.currentUser()?.role === 'super_user') {
       <a routerLink="/admin" routerLinkActive="text-brand-red"
         class="text-gray-300 hover:text-white transition-colors duration-200 uppercase flex items-center gap-1">
         <span class="w-1.5 h-1.5 bg-brand-red rounded-full animate-ping"></span>
