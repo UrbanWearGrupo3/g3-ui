@@ -25,10 +25,12 @@
            class="px-8 py-4 bg-brand-red hover:bg-white text-black hover:text-black font-black text-sm uppercase rounded-xl transition-all duration-300 shadow-xl shadow-brand-red/10 hover:shadow-white/5 text-center tracking-wider">
           Explorar Colección
         </a>
+        @if (!userService.currentUser()) {
         <a routerLink="/login" 
            class="px-8 py-4 border border-brand-border-gray hover:border-brand-red text-white hover:text-white font-bold text-sm uppercase rounded-xl transition-all duration-300 text-center tracking-wider bg-transparent">
           Unirse al Club
         </a>
+        }
       </div>
     </div>
 

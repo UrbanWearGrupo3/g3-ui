@@ -1,6 +1,7 @@
 import { Injectable, inject, signal, PLATFORM_ID } from '@angular/core';
 import { isPlatformServer } from '@angular/common';
 import { HttpClient, HttpParams } from '@angular/common/http';
+import { Router } from '@angular/router';
 import { Observable, of } from 'rxjs';
 import { map, tap, catchError } from 'rxjs/operators';
 import { User } from '../../models/user';
@@ -11,6 +12,7 @@ import { User } from '../../models/user';
 export class UserService {
   private readonly http = inject(HttpClient);
   private readonly platformId = inject(PLATFORM_ID);
+  private readonly router = inject(Router);
   private readonly SESSION_KEY = 'urban_wear_session';
   private readonly TOKEN_KEY = 'urban_wear_token';
 
@@ -135,6 +137,7 @@ export class UserService {
       localStorage.removeItem(this.SESSION_KEY);
       localStorage.removeItem(this.TOKEN_KEY);
     }
+    this.router.navigate(['/login']);
   }
 
   getUsers(filters?: { search?: string; rol?: string; activo?: boolean }): Observable<User[]> {
