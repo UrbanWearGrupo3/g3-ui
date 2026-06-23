@@ -32,7 +32,7 @@ export class Products implements OnInit {
 
   // Variante fields
   varTalle = signal<string>('');
-  varColor = signal<string>('');
+  varColorId = signal<number>(1);
   varStock = signal<number>(0);
   variantes = signal<VarianteRequest[]>([]);
 
@@ -105,7 +105,7 @@ export class Products implements OnInit {
     this.categoryIdField.set(1);
     this.imageField.set('');
     this.varTalle.set('');
-    this.varColor.set('');
+    this.varColorId.set(1);
     this.varStock.set(0);
     this.variantes.set([]);
     this.formError.set('');
@@ -149,7 +149,7 @@ export class Products implements OnInit {
     if (product.variantes) {
       this.variantes.set(product.variantes.map(v => ({
         talle: v.talle,
-        color: v.color,
+        colorId: (v.color as any)?.id || 1,
         stock: v.stock,
         codigoBarras: v.codigoBarras
       })));
@@ -172,23 +172,23 @@ export class Products implements OnInit {
     else if (field === 'categoryId') this.categoryIdField.set(Number(val));
     else if (field === 'image') this.imageField.set(val);
     else if (field === 'varTalle') this.varTalle.set(val);
-    else if (field === 'varColor') this.varColor.set(val);
+    else if (field === 'varColorId') this.varColorId.set(Number(val));
     else if (field === 'varStock') this.varStock.set(Number(val));
   }
 
   addVariante() {
     const talle = this.varTalle().trim();
-    const color = this.varColor().trim();
+    const colorId = this.varColorId();
     const stock = this.varStock();
 
-    if (!talle || !color) {
+    if (!talle || !colorId) {
       this.formError.set('Talle y color son obligatorios para la variante.');
       return;
     }
 
-    this.variantes.update(list => [...list, { talle, color, stock }]);
+    this.variantes.update(list => [...list, { talle, colorId, stock }]);
     this.varTalle.set('');
-    this.varColor.set('');
+    this.varColorId.set(1);
     this.varStock.set(0);
     this.formError.set('');
   }
@@ -225,7 +225,7 @@ export class Products implements OnInit {
       nombre: this.nameField(),
       descripcion: this.descField(),
       precio: this.priceField(),
-      marca: this.brandField(),
+      marca: 'UrbanWear',
       imagenUrl: finalImageUrl || undefined,
       categoriaId: this.categoryIdField(),
       variantes: this.variantes().length > 0 ? this.variantes() : undefined
@@ -287,5 +287,21 @@ export class Products implements OnInit {
       this.currentPage.update(p => p - 1);
       this.loadProducts();
     }
+  }
+
+  getColorName(colorId: number): string {
+    const colors: { [key: number]: string } = {
+      1: 'Negro',
+      2: 'Blanco',
+      3: 'Rojo',
+      4: 'Azul',
+      5: 'Verde',
+      6: 'Gris',
+      7: 'Beige',
+      8: 'Bordó',
+      9: 'Celeste',
+      10: 'Rosa'
+    };
+    return colors[colorId] || 'Desconocido';
   }
 }

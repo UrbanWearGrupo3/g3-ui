@@ -18,7 +18,8 @@
   <!-- Formulario Agregar Producto -->
   <div class="p-6 sm:p-8 bg-brand-card-gray border border-brand-border-gray rounded-3xl space-y-6">
     <div class="flex justify-between items-center border-b border-brand-border-gray pb-4">
-      <h3 class="font-bold text-white uppercase tracking-wider text-sm">{{ editingProductId() ? 'Editar Prenda' : 'Nuevo Drop Streetwear' }}</h3>
+      <h3 class="font-bold text-white uppercase tracking-wider text-sm">{{ editingProductId() ? 'Editar Prenda' : 'Nuevo
+        Drop Streetwear' }}</h3>
       <button (click)="toggleForm(false)"
         class="text-gray-500 hover:text-white text-xs font-bold uppercase cursor-pointer">Cerrar</button>
     </div>
@@ -45,15 +46,20 @@
             class="w-full px-4 py-3 bg-black border border-brand-border-gray rounded-xl text-sm text-white focus:outline-none focus:border-brand-red transition-all">
         </div>
         <div>
-          <label for="prod-cat" class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Categoría
-            (ID)</label>
-          <input id="prod-cat" type="number" required [value]="categoryIdField()"
-            (input)="updateFormField('categoryId', $event)" min="1" placeholder="ID de la categoría (ej: 1, 2, 3...)"
+          <label for="prod-cat"
+            class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Categoría</label>
+          <select id="prod-cat" required [value]="categoryIdField()" (change)="updateFormField('categoryId', $event)"
             class="w-full px-4 py-3 bg-black border border-brand-border-gray rounded-xl text-sm text-white focus:outline-none focus:border-brand-red transition-all">
+            <option value="1">Remera</option>
+            <option value="2">Pantalones</option>
+            <option value="4">Gorras</option>
+            <option value="3">Camperas</option>
+            <option value="5">Accesorios</option>
+          </select>
         </div>
       </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label for="prod-price" class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Precio
             ($)</label>
@@ -62,21 +68,17 @@
             class="w-full px-4 py-3 bg-black border border-brand-border-gray rounded-xl text-sm text-white focus:outline-none focus:border-brand-red transition-all">
         </div>
         <div>
-          <label for="prod-brand"
-            class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Marca</label>
-          <input id="prod-brand" type="text" [value]="brandField()" (input)="updateFormField('brand', $event)"
-            placeholder="Ej: Nike, Adidas..."
-            class="w-full px-4 py-3 bg-black border border-brand-border-gray rounded-xl text-sm text-white focus:outline-none focus:border-brand-red transition-all">
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Imagen de la Prenda</label>
+          <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Imagen de la
+            Prenda</label>
           <div class="flex items-center gap-4">
             <!-- File Input Container -->
             <div class="relative flex-1">
               <input id="prod-file" type="file" accept="image/*" (change)="onFileSelected($event)" class="hidden">
-              <label for="prod-file" class="flex items-center justify-center gap-2 w-full px-4 py-3 bg-black border border-brand-border-gray rounded-xl text-sm text-gray-400 hover:text-white hover:border-brand-red transition-all duration-300 cursor-pointer">
+              <label for="prod-file"
+                class="flex items-center justify-center gap-2 w-full px-4 py-3 bg-black border border-brand-border-gray rounded-xl text-sm text-gray-400 hover:text-white hover:border-brand-red transition-all duration-300 cursor-pointer">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
                 </svg>
                 <span>{{ selectedFile() ? selectedFile()!.name : 'Seleccionar archivo...' }}</span>
               </label>
@@ -84,18 +86,23 @@
 
             <!-- Image Preview -->
             @if (imagePreviewUrl()) {
-              <div class="relative h-12 w-12 bg-neutral-900 border border-brand-border-gray rounded-lg overflow-hidden flex-shrink-0 group">
-                <img [src]="imagePreviewUrl()" class="w-full h-full object-cover">
-                <button type="button" (click)="removeSelectedFile()" class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-white cursor-pointer">
-                  <svg class="w-4 h-4 text-brand-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                  </svg>
-                </button>
-              </div>
+            <div
+              class="relative h-12 w-12 bg-neutral-900 border border-brand-border-gray rounded-lg overflow-hidden flex-shrink-0 group">
+              <img [src]="imagePreviewUrl()" class="w-full h-full object-cover">
+              <button type="button" (click)="removeSelectedFile()"
+                class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-white cursor-pointer">
+                <svg class="w-4 h-4 text-brand-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                  </path>
+                </svg>
+              </button>
+            </div>
             }
           </div>
           @if (isUploadingImage()) {
-            <p class="text-[10px] text-brand-red font-bold uppercase tracking-widest mt-1 animate-pulse">Subiendo imagen a Supabase Storage...</p>
+          <p class="text-[10px] text-brand-red font-bold uppercase tracking-widest mt-1 animate-pulse">Subiendo imagen a
+            Supabase Storage...</p>
           }
         </div>
       </div>
@@ -119,7 +126,7 @@
           <div class="flex items-center gap-3 px-4 py-2.5 bg-black border border-brand-border-gray rounded-xl">
             <span class="text-sm text-white font-bold">{{ v.talle }}</span>
             <span class="text-gray-500">·</span>
-            <span class="text-sm text-gray-300">{{ v.color }}</span>
+            <span class="text-sm text-gray-300">{{ getColorName(v.colorId) }}</span>
             <span class="text-gray-500">·</span>
             <span class="text-sm text-brand-red font-bold">{{ v.stock }} u</span>
             <button type="button" (click)="removeVariante($index)"
@@ -135,11 +142,27 @@
 
         <!-- Add variante form -->
         <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
-          <input type="text" [value]="varTalle()" (input)="updateFormField('varTalle', $event)"
-            placeholder="Talle (S, M, L...)"
+          <select [value]="varTalle()" (change)="updateFormField('varTalle', $event)"
             class="px-3 py-2.5 bg-black border border-brand-border-gray rounded-xl text-sm text-white focus:outline-none focus:border-brand-red transition-all">
-          <input type="text" [value]="varColor()" (input)="updateFormField('varColor', $event)" placeholder="Color"
+            <option value="">Seleccionar Talle...</option>
+            <option value="S">S</option>
+            <option value="M">M</option>
+            <option value="L">L</option>
+            <option value="XL">XL</option>
+          </select>
+          <select [value]="varColorId()" (change)="updateFormField('varColorId', $event)"
             class="px-3 py-2.5 bg-black border border-brand-border-gray rounded-xl text-sm text-white focus:outline-none focus:border-brand-red transition-all">
+            <option value="1">Negro</option>
+            <option value="2">Blanco</option>
+            <option value="3">Rojo</option>
+            <option value="4">Azul</option>
+            <option value="5">Verde</option>
+            <option value="6">Gris</option>
+            <option value="7">Beige</option>
+            <option value="8">Bordó</option>
+            <option value="9">Celeste</option>
+            <option value="10">Rosa</option>
+          </select>
           <input type="number" [value]="varStock()" (input)="updateFormField('varStock', $event)" placeholder="Stock"
             min="0"
             class="px-3 py-2.5 bg-black border border-brand-border-gray rounded-xl text-sm text-white focus:outline-none focus:border-brand-red transition-all">

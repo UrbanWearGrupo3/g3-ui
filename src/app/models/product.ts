@@ -50,7 +50,7 @@ export interface ProductoRequest {
 
 export interface VarianteRequest {
   talle: string;
-  color: string;
+  colorId: number;
   stock: number;
   codigoBarras?: string;
 }
