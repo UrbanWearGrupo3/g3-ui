@@ -8,6 +8,8 @@ import { UserService } from './user.service';
 export interface OrderDetail {
   id: number;
   cantidad: number;
+  color?: string;
+  talle?: string;
   producto: {
     id: number;
     nombre: string;
@@ -77,6 +79,12 @@ export class OrderService {
     }
     
     return of(this.orders());
+  }
+
+  getMyOrders(): Observable<Order[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/pedidos/mis-pedidos`).pipe(
+      map(pedidos => pedidos.map(p => this.mapBackendOrderToFrontend(p)))
+    );
   }
 
   addOrder(customerName: string, customerEmail: string, itemsCount: number, total: number): Observable<Order> {

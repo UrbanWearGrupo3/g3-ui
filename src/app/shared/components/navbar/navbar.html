@@ -28,6 +28,12 @@
         Admin Panel
       </a>
       }
+      @if (userService.currentUser()) {
+      <a routerLink="/my-orders" routerLinkActive="text-brand-red"
+        class="text-gray-300 hover:text-white transition-colors duration-200 uppercase">
+        Mis Pedidos
+      </a>
+      }
     </nav>
 
     <!-- Acciones Derecha -->

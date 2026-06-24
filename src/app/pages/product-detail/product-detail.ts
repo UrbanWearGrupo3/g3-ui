@@ -3,7 +3,7 @@ import { CommonModule, DecimalPipe, Location } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { ProductService } from '../../core/services/product.service';
 import { CartService } from '../../core/services/cart.service';
-import { Product, Variante, ColorInfo } from '../../models/product';
+import { Product, Variante, ColorResponse as ColorInfo } from '../../models/product';
 
 @Component({
   selector: 'app-product-detail',

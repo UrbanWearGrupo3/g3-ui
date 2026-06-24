@@ -12,6 +12,8 @@ import { Checkout } from './pages/checkout/checkout';
 import { Dashboard } from './pages/admin/dashboard/dashboard';
 import { Products as AdminProducts } from './pages/admin/products/products';
 import { Users } from './pages/admin/users/users';
+import { Keys } from './pages/admin/keys/keys';
+import { MyOrders } from './pages/my-orders/my-orders';
 import { AdminGuard } from './core/guards/admin.guard';
 import { SuperUserGuard } from './core/guards/superuser.guard';
 
@@ -28,6 +30,7 @@ export const routes: Routes = [
       { path: 'checkout', component: Checkout },
       { path: 'checkout-success', component: CheckoutSuccess },
       { path: 'cart', component: Cart },
+      { path: 'my-orders', component: MyOrders },
     ]
   },
   {
@@ -38,7 +41,8 @@ export const routes: Routes = [
       { path: '', redirectTo: 'products', pathMatch: 'full' },
       { path: 'dashboard', component: Dashboard, canActivate: [SuperUserGuard] },
       { path: 'products', component: AdminProducts },
-      { path: 'users', component: Users, canActivate: [SuperUserGuard] }
+      { path: 'users', component: Users, canActivate: [SuperUserGuard] },
+      { path: 'keys', component: Keys, canActivate: [SuperUserGuard] }
     ]
   },
   { path: '**', redirectTo: '' }

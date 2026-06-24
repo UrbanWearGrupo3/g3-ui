@@ -188,7 +188,17 @@
                      class="w-12 h-12 object-cover rounded-lg border border-brand-border-gray" />
                 <div>
                   <p class="text-sm font-bold text-white leading-snug">{{ item.producto.nombre }}</p>
-                  <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mt-0.5">{{ item.producto.marca || 'UrbanWear' }}</p>
+                  <div class="flex flex-wrap gap-2 items-center mt-1">
+                    <span class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">{{ item.producto.marca || 'UrbanWear' }}</span>
+                    @if (item.talle) {
+                      <span class="w-1 h-1 bg-brand-border-gray rounded-full"></span>
+                      <span class="text-[10px] text-gray-400 font-bold uppercase">Talle: <span class="text-white">{{ item.talle }}</span></span>
+                    }
+                    @if (item.color) {
+                      <span class="w-1 h-1 bg-brand-border-gray rounded-full"></span>
+                      <span class="text-[10px] text-gray-400 font-bold uppercase">Color: <span class="text-white">{{ item.color }}</span></span>
+                    }
+                  </div>
                 </div>
               </div>
               <div class="text-right">
