@@ -54,12 +54,14 @@ export class Products implements OnInit, OnDestroy {
   varFilterText = signal<string>('');
   varFilterTalle = signal<string>('');
   varFilterColorId = signal<number | null>(null);
+  varFilterActivo = signal<string>('active');
 
   variantesFiltradas = computed(() => {
     const list = this.variantes();
     const query = this.varFilterText().toLowerCase().trim();
     const talle = this.varFilterTalle();
     const colorId = this.varFilterColorId();
+    const activo = this.varFilterActivo();
 
     return list.filter((v, index) => {
       const matchText = !query || 
@@ -70,7 +72,11 @@ export class Products implements OnInit, OnDestroy {
 
       const matchColor = colorId == null || v.colorId === colorId;
 
-      return matchText && matchTalle && matchColor;
+      const matchActivo = activo === 'all' || 
+        (activo === 'active' && v.activo !== false) ||
+        (activo === 'inactive' && v.activo === false);
+
+      return matchText && matchTalle && matchColor && matchActivo;
     });
   });
 
@@ -264,36 +270,54 @@ export class Products implements OnInit, OnDestroy {
 
   updateVariantFieldByObject(v: VarianteRequest, field: string, val: any) {
     this.formError.set('');
+    
+    const nuevoTalle = field === 'talle' ? val : v.talle;
+    const nuevoColorId = field === 'colorId' ? Number(val) : Number(v.colorId);
+
+    // Check collision with any OTHER variant in the list
+    const idx = this.variantes().indexOf(v);
+    const colision = this.variantes().some((item, i) => 
+      i !== idx && 
+      item.talle.toUpperCase() === nuevoTalle.toUpperCase() && 
+      Number(item.colorId) === nuevoColorId
+    );
+
+    if (colision) {
+      this.formError.set('No se puede cambiar la variante: esa combinación de talle y color ya existe.');
+      
+      // Revert the DOM element by forcing Angular to see a change.
+      // Temporarily set the property to the user's selected value, trigger change detection,
+      // and then asynchronously reset it back to the original value in the next tick.
+      const originalValue = v[field as keyof VarianteRequest];
+      (v as any)[field] = val;
+      this.variantes.update(list => [...list]);
+
+      setTimeout(() => {
+        (v as any)[field] = originalValue;
+        this.variantes.update(list => [...list]);
+      }, 0);
+      return;
+    }
+
+    // No collision: update normally
     this.variantes.update(list => {
       const idx = list.indexOf(v);
       if (idx === -1) return list;
-
-      const nuevoTalle = field === 'talle' ? val : v.talle;
-      const nuevoColorId = field === 'colorId' ? Number(val) : Number(v.colorId);
-
-      // Check collision with any OTHER variant in the list
-      const colision = list.some((item, i) => 
-        i !== idx && 
-        item.talle.toUpperCase() === nuevoTalle.toUpperCase() && 
-        Number(item.colorId) === nuevoColorId
-      );
-
-      if (colision) {
-        this.formError.set('No se puede cambiar la variante: esa combinación de talle y color ya existe.');
-        return list;
-      }
-
+      
       const newList = [...list];
+      const item = { ...newList[idx] };
       if (field === 'talle') {
-        newList[idx].talle = val;
+        item.talle = val;
       } else if (field === 'colorId') {
-        newList[idx].colorId = Number(val);
+        item.colorId = Number(val);
       } else if (field === 'stock') {
-        newList[idx].stock = Number(val);
+        item.stock = Number(val);
       }
+      newList[idx] = item;
       return newList;
     });
   }
+
 
 
   editProduct(product: Product) {
@@ -308,10 +332,12 @@ export class Products implements OnInit, OnDestroy {
     this.selectedFile.set(null);
     if (product.variantes) {
       this.variantes.set(product.variantes.map(v => ({
+        id: v.id,
         talle: v.talle,
         colorId: v.color?.id || 1,
         stock: v.stock,
-        codigoBarras: v.codigoBarras
+        codigoBarras: v.codigoBarras,
+        activo: v.activo !== false
       })));
     } else {
       this.variantes.set([]);
@@ -371,7 +397,8 @@ export class Products implements OnInit, OnDestroy {
             nuevas.push({
               talle,
               colorId,
-              stock: stock >= 0 ? stock : 0
+              stock: stock >= 0 ? stock : 0,
+              activo: true
             });
             countNuevas++;
           } else {
@@ -416,18 +443,49 @@ export class Products implements OnInit, OnDestroy {
       return;
     }
 
-    this.variantes.update(list => [...list, { talle, colorId, stock }]);
+    this.variantes.update(list => [...list, { talle, colorId, stock, activo: true }]);
     this.varTalle.set('');
     this.varColorId.set(null);
     this.varStock.set(0);
   }
 
   removeVariante(index: number) {
-    this.variantes.update(list => list.filter((_, i) => i !== index));
+    const list = this.variantes();
+    if (index >= 0 && index < list.length) {
+      this.removeVarianteObject(list[index]);
+    }
   }
 
   removeVarianteObject(v: VarianteRequest) {
-    this.variantes.update(list => list.filter(item => item !== v));
+    if (!v.codigoBarras) {
+      // It's a new variant, we can just delete it from the list
+      this.variantes.update(list => list.filter(item => item !== v));
+    } else {
+      // It's an existing variant, toggle its active status to false
+      this.variantes.update(list => {
+        const idx = list.indexOf(v);
+        if (idx === -1) return list;
+        const newList = [...list];
+        newList[idx] = {
+          ...newList[idx],
+          activo: false
+        };
+        return newList;
+      });
+    }
+  }
+
+  toggleVariantActivo(v: VarianteRequest) {
+    this.variantes.update(list => {
+      const idx = list.indexOf(v);
+      if (idx === -1) return list;
+      const newList = [...list];
+      newList[idx] = {
+        ...newList[idx],
+        activo: newList[idx].activo === false ? true : false
+      };
+      return newList;
+    });
   }
 
 

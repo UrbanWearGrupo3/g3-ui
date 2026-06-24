@@ -11,6 +11,7 @@ export interface Variante {
   color: ColorResponse;
   stock: number;
   codigoBarras: string;
+  activo: boolean;
 }
 
 export interface Categoria {
@@ -57,8 +58,10 @@ export interface ProductoRequest {
 }
 
 export interface VarianteRequest {
+  id?: number;
   talle: string;
   colorId: number;
   stock: number;
   codigoBarras?: string;
+  activo?: boolean;
 }
