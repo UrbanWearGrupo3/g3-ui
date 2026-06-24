@@ -90,6 +90,15 @@ export class Products implements OnInit, OnDestroy {
   currentPage = signal<number>(0);
   totalPages = signal<number>(0);
   totalElements = signal<number>(0);
+  pageSize = signal<number>(10);
+
+  pageNumbers = computed(() => {
+    const pages = [];
+    for (let i = 0; i < this.totalPages(); i++) {
+      pages.push(i);
+    }
+    return pages;
+  });
 
   // Product Filter States
   searchQuery = signal<string>('');
@@ -122,7 +131,7 @@ export class Products implements OnInit, OnDestroy {
     this.isLoading.set(true);
     const filters: any = {
       page: this.currentPage(),
-      size: 20
+      size: this.pageSize()
     };
 
     const query = this.searchQuery().trim();
@@ -630,6 +639,20 @@ export class Products implements OnInit, OnDestroy {
       this.currentPage.update(p => p - 1);
       this.loadProducts();
     }
+  }
+
+  goToPage(page: number) {
+    if (page >= 0 && page < this.totalPages()) {
+      this.currentPage.set(page);
+      this.loadProducts();
+    }
+  }
+
+  onPageSizeChange(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    this.pageSize.set(Number(target.value));
+    this.currentPage.set(0);
+    this.loadProducts();
   }
 
   getColorName(colorId: number): string {

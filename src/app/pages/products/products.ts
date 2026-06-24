@@ -17,6 +17,14 @@ export class Products implements OnInit {
   categories = ['Todas', 'Remera', 'Pantalones', 'Gorras', 'Camperas', 'Accesorios'];
   searchQuery = signal<string>('');
 
+  categoryMap: { [key: string]: number } = {
+    'Remera': 1,
+    'Pantalones': 2,
+    'Camperas': 3,
+    'Gorras': 4,
+    'Accesorios': 5
+  };
+
   // Pagination
   currentPage = signal<number>(0);
   totalPages = signal<number>(0);
@@ -24,26 +32,15 @@ export class Products implements OnInit {
   isLoading = signal<boolean>(false);
 
   filteredProducts = computed(() => {
-    const cat = this.selectedCategory();
-    const query = this.searchQuery().toLowerCase().trim();
+    return this.products();
+  });
 
-    let result = this.products();
-
-    if (cat !== 'Todas') {
-      result = result.filter(p => {
-        const catName = p.categoria?.nombre || '';
-        return catName.toLowerCase().includes(cat.toLowerCase());
-      });
+  pageNumbers = computed(() => {
+    const pages = [];
+    for (let i = 0; i < this.totalPages(); i++) {
+      pages.push(i);
     }
-
-    if (query) {
-      result = result.filter(p =>
-        p.nombre.toLowerCase().includes(query) ||
-        (p.descripcion || '').toLowerCase().includes(query)
-      );
-    }
-
-    return result;
+    return pages;
   });
 
   ngOnInit(): void {
@@ -52,11 +49,23 @@ export class Products implements OnInit {
 
   loadProducts(): void {
     this.isLoading.set(true);
-    this.productService.getProducts({
+    const filters: any = {
       activo: true,
       page: this.currentPage(),
-      size: 50
-    }).subscribe({
+      size: 12
+    };
+
+    const cat = this.selectedCategory();
+    if (cat !== 'Todas' && this.categoryMap[cat]) {
+      filters.categoriaId = this.categoryMap[cat];
+    }
+
+    const query = this.searchQuery().trim();
+    if (query) {
+      filters.nombre = query;
+    }
+
+    this.productService.getProducts(filters).subscribe({
       next: (page) => {
         this.products.set(page.content);
         this.totalPages.set(page.totalPages);
@@ -72,11 +81,15 @@ export class Products implements OnInit {
 
   setCategory(category: string) {
     this.selectedCategory.set(category);
+    this.currentPage.set(0);
+    this.loadProducts();
   }
 
   onSearch(event: Event) {
     const value = (event.target as HTMLInputElement).value;
     this.searchQuery.set(value);
+    this.currentPage.set(0);
+    this.loadProducts();
   }
 
   nextPage() {
@@ -89,6 +102,13 @@ export class Products implements OnInit {
   previousPage() {
     if (this.currentPage() > 0) {
       this.currentPage.update(p => p - 1);
+      this.loadProducts();
+    }
+  }
+
+  goToPage(page: number) {
+    if (page >= 0 && page < this.totalPages()) {
+      this.currentPage.set(page);
       this.loadProducts();
     }
   }

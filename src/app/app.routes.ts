@@ -8,11 +8,14 @@ import { LoginComponent } from './pages/login/login';
 import { RegisterComponent } from './pages/register/register';
 import { Home } from './pages/home/home';
 import { Products as UserProducts } from './pages/products/products';
+import { ProductDetail } from './pages/product-detail/product-detail';
 import { Cart } from './pages/cart/cart';
 import { Checkout } from './pages/checkout/checkout';
 import { Dashboard } from './pages/admin/dashboard/dashboard';
 import { Products as AdminProducts } from './pages/admin/products/products';
 import { Users } from './pages/admin/users/users';
+import { Keys } from './pages/admin/keys/keys';
+import { MyOrders } from './pages/my-orders/my-orders';
 import { AdminGuard } from './core/guards/admin.guard';
 import { SuperUserGuard } from './core/guards/superuser.guard';
 
@@ -25,11 +28,13 @@ export const routes: Routes = [
       { path: 'login', component: LoginComponent },
       { path: 'register', component: RegisterComponent },
       { path: 'products', component: UserProducts },
+      { path: 'products/:id', component: ProductDetail },
       { path: 'checkout', component: Checkout },
       { path: 'checkout-success', component: CheckoutSuccess },
       { path: 'checkout-pending', component: CheckoutPending },
       { path: 'checkout-failure', component: CheckoutFailure },
       { path: 'cart', component: Cart },
+      { path: 'my-orders', component: MyOrders },
     ]
   },
   {
@@ -40,7 +45,8 @@ export const routes: Routes = [
       { path: '', redirectTo: 'products', pathMatch: 'full' },
       { path: 'dashboard', component: Dashboard, canActivate: [SuperUserGuard] },
       { path: 'products', component: AdminProducts },
-      { path: 'users', component: Users, canActivate: [SuperUserGuard] }
+      { path: 'users', component: Users, canActivate: [SuperUserGuard] },
+      { path: 'keys', component: Keys, canActivate: [SuperUserGuard] }
     ]
   },
   { path: '**', redirectTo: '' }

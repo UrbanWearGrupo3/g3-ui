@@ -17,6 +17,29 @@ export class Dashboard implements OnInit {
   isModalOpen = signal<boolean>(false);
   updatingStatus = signal<boolean>(false);
 
+  // Pagination states
+  currentPage = signal<number>(0);
+  pageSize = signal<number>(10);
+
+  paginatedOrders = computed(() => {
+    const start = this.currentPage() * this.pageSize();
+    const end = start + this.pageSize();
+    return this.recentOrders().slice(start, end);
+  });
+
+  totalPages = computed(() => {
+    return Math.ceil(this.recentOrders().length / this.pageSize());
+  });
+
+  pageNumbers = computed(() => {
+    const pages = [];
+    const total = this.totalPages();
+    for (let i = 0; i < total; i++) {
+      pages.push(i);
+    }
+    return pages;
+  });
+
   // Dynamic Metrics
   totalSales = computed(() => {
     return this.recentOrders()
@@ -43,6 +66,7 @@ export class Dashboard implements OnInit {
           return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
         });
         this.recentOrders.set(sorted);
+        this.currentPage.set(0);
       },
       error: (err) => console.error('Error fetching orders from Java backend:', err)
     });
@@ -81,5 +105,29 @@ export class Dashboard implements OnInit {
         alert('Error al actualizar el estado del pedido.');
       }
     });
+  }
+
+  nextPage(): void {
+    if (this.currentPage() < this.totalPages() - 1) {
+      this.currentPage.update(p => p + 1);
+    }
+  }
+
+  previousPage(): void {
+    if (this.currentPage() > 0) {
+      this.currentPage.update(p => p - 1);
+    }
+  }
+
+  goToPage(page: number): void {
+    if (page >= 0 && page < this.totalPages()) {
+      this.currentPage.set(page);
+    }
+  }
+
+  onPageSizeChange(event: Event): void {
+    const target = event.target as HTMLSelectElement;
+    this.pageSize.set(Number(target.value));
+    this.currentPage.set(0);
   }
 }

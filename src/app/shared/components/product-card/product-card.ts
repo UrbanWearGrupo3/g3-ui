@@ -1,12 +1,13 @@
 import { Component, input, inject } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { Product } from '../../../models/product';
 import { CartService } from '../../../core/services/cart.service';
 import { ProductService } from '../../../core/services/product.service';
 
 @Component({
   selector: 'app-product-card',
-  imports: [DecimalPipe],
+  imports: [DecimalPipe, RouterLink],
   templateUrl: './product-card.html',
   styleUrl: './product-card.css',
 })

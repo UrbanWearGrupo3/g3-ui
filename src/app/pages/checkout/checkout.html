@@ -136,13 +136,20 @@
       <h2 class="text-sm font-black text-white uppercase tracking-wider border-b border-brand-border-gray pb-3">Resumen de Pedido</h2>
 
       <div class="space-y-4 max-h-[280px] overflow-y-auto pr-1">
-        @for (item of cartService.cartItems(); track item.id) {
+        @for (item of cartService.cartItems(); track (item.cartItemId || (item.id + '_' + item.selectedColor + '_' + item.selectedTalle))) {
         <div class="flex items-center gap-3">
           <div class="h-12 w-12 bg-neutral-900 border border-brand-border-gray rounded-lg overflow-hidden flex-shrink-0">
             <img [src]="item.imagenUrl" [alt]="item.nombre" class="w-full h-full object-cover">
           </div>
           <div class="flex-grow min-w-0">
             <h3 class="text-xs font-bold text-white truncate">{{ item.nombre }}</h3>
+            @if (item.selectedColor || item.selectedTalle) {
+              <span class="text-[9px] text-brand-text-muted mt-0.5 block truncate">
+                @if (item.selectedColor) { Color: {{ item.selectedColor }} }
+                @if (item.selectedColor && item.selectedTalle) { &bull; }
+                @if (item.selectedTalle) { Talle: {{ item.selectedTalle }} }
+              </span>
+            }
             <p class="text-[10px] text-brand-text-muted mt-0.5">Cant: {{ item.quantity }} &bull; ${{ item.precio }}</p>
           </div>
           <span class="text-xs font-bold text-white">${{ (item.precio * item.quantity) | number:'1.2-2' }}</span>

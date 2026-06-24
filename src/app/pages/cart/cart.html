@@ -9,7 +9,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 
       <div class="lg:col-span-8 space-y-4">
-        @for (item of cartService.cartItems(); track item.id) {
+        @for (item of cartService.cartItems(); track (item.cartItemId || (item.id + '_' + item.selectedColor + '_' + item.selectedTalle))) {
           <div class="flex flex-col sm:flex-row sm:items-center gap-4 p-5 bg-brand-card-gray border border-brand-border-gray rounded-2xl transition-all duration-300 hover:border-gray-700">
             <div class="h-20 w-20 sm:h-24 sm:w-24 flex-shrink-0 overflow-hidden bg-neutral-900 rounded-xl border border-brand-border-gray">
               <img [src]="item.imagenUrl" [alt]="item.nombre" class="h-full w-full object-cover">
@@ -20,6 +20,14 @@
                 {{ item.categoria?.nombre || 'Sin categoría' }}
               </span>
               <h2 class="text-sm sm:text-base font-bold text-white truncate">{{ item.nombre }}</h2>
+              
+              @if (item.selectedColor || item.selectedTalle) {
+                <p class="text-xs text-brand-text-muted mt-1 flex flex-wrap gap-x-3 gap-y-1">
+                  @if (item.selectedColor) { <span>Color: <strong class="text-white font-bold">{{ item.selectedColor }}</strong></span> }
+                  @if (item.selectedTalle) { <span>Talle: <strong class="text-white font-bold">{{ item.selectedTalle }}</strong></span> }
+                </p>
+              }
+
               <span class="text-sm font-black text-white block mt-1">
                 ${{ item.precio | number:'1.2-2' }}
               </span>
@@ -27,18 +35,18 @@
 
             <div class="flex items-center justify-between sm:justify-end gap-6 mt-4 sm:mt-0 pt-4 sm:pt-0 border-t sm:border-t-0 border-brand-border-gray/50">
               <div class="flex items-center border border-brand-border-gray rounded-xl overflow-hidden bg-black">
-                <button (click)="cartService.updateQuantity(item.id, item.quantity - 1)" 
+                <button (click)="cartService.updateQuantity(item, item.quantity - 1)" 
                         class="px-3 py-2 hover:bg-neutral-900 text-gray-400 hover:text-brand-red font-bold transition-colors cursor-pointer" 
                         aria-label="Disminuir cantidad">-</button>
                 <span class="px-3 py-2 text-xs font-black text-white bg-transparent min-w-[36px] text-center">
                   {{ item.quantity }}
                 </span>
-                <button (click)="cartService.updateQuantity(item.id, item.quantity + 1)" 
+                <button (click)="cartService.updateQuantity(item, item.quantity + 1)" 
                         class="px-3 py-2 hover:bg-neutral-900 text-gray-400 hover:text-brand-red font-bold transition-colors cursor-pointer" 
                         aria-label="Aumentar cantidad">+</button>
               </div>
 
-              <button (click)="cartService.removeItem(item.id)" 
+              <button (click)="cartService.removeItem(item)" 
                       class="p-2.5 text-gray-500 hover:text-brand-red rounded-xl hover:bg-brand-red/5 transition-all duration-300 cursor-pointer" 
                       aria-label="Eliminar producto">
                 <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

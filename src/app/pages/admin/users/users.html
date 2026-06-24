@@ -141,14 +141,12 @@
         Limpiar Filtros
       </button>
     </div>
-  </div>
-
-  <!-- Tabla de Usuarios -->
+  </div>  <!-- Tabla de Usuarios -->
   <div class="bg-brand-card-gray border border-brand-border-gray rounded-2xl overflow-hidden">
     <div class="p-6 border-b border-brand-border-gray flex items-center justify-between">
       <h3 class="font-bold text-white uppercase tracking-wider text-sm">Cuentas de Acceso</h3>
       <span class="px-2.5 py-1 bg-black border border-brand-border-gray text-[10px] font-bold text-gray-400 rounded-lg">
-        {{ users().length }} Miembros Registrados
+        {{ totalElements() }} Miembros Registrados
       </span>
     </div>
 
@@ -228,5 +226,57 @@
         </tbody>
       </table>
     </div>
+
+    <!-- Pagination Footer -->
+    <div class="flex flex-col sm:flex-row justify-between items-center gap-4 p-6 border-t border-brand-border-gray">
+      <!-- Size Selector -->
+      <div class="flex items-center gap-2 text-xs font-semibold text-brand-text-muted">
+        <span>Mostrar:</span>
+        <select [value]="pageSize()" (change)="onPageSizeChange($event)"
+          class="bg-black border border-brand-border-gray rounded-lg px-2 py-1 text-white focus:outline-none focus:border-brand-red cursor-pointer">
+          <option [value]="5">5</option>
+          <option [value]="10">10</option>
+          <option [value]="20">20</option>
+          <option [value]="50">50</option>
+        </select>
+        <span>usuarios</span>
+      </div>
+
+      <!-- Page navigation -->
+      @if (totalPages() > 1) {
+      <div class="flex items-center gap-2">
+        <!-- Prev page button -->
+        <button (click)="previousPage()" [disabled]="currentPage() === 0"
+          [class]="currentPage() === 0
+            ? 'px-3 py-1.5 bg-black border border-brand-border-gray text-gray-600 text-xs font-bold uppercase rounded-lg cursor-not-allowed'
+            : 'px-3 py-1.5 bg-black border border-brand-border-gray hover:border-brand-red text-white text-xs font-bold uppercase rounded-lg transition-all duration-300 cursor-pointer'">
+          Anterior
+        </button>
+
+        <!-- Page Numbers -->
+        @for (page of pageNumbers(); track page) {
+        <button (click)="goToPage(page)"
+          [class]="currentPage() === page
+            ? 'w-8 h-8 bg-brand-red text-black border border-brand-red font-black text-xs uppercase rounded-lg transition-all'
+            : 'w-8 h-8 bg-black border border-brand-border-gray hover:border-white text-white font-bold text-xs uppercase rounded-lg transition-all duration-300 cursor-pointer'">
+          {{ page + 1 }}
+        </button>
+        }
+
+        <!-- Next page button -->
+        <button (click)="nextPage()" [disabled]="currentPage() >= totalPages() - 1"
+          [class]="currentPage() >= totalPages() - 1
+            ? 'px-3 py-1.5 bg-black border border-brand-border-gray text-gray-600 text-xs font-bold uppercase rounded-lg cursor-not-allowed'
+            : 'px-3 py-1.5 bg-black border border-brand-border-gray hover:border-brand-red text-white text-xs font-bold uppercase rounded-lg transition-all duration-300 cursor-pointer'">
+          Siguiente
+        </button>
+      </div>
+      }
+
+      <!-- Indicator -->
+      <div class="text-xs font-bold text-brand-text-muted uppercase tracking-wider">
+        Página {{ currentPage() + 1 }} de {{ totalPages() || 1 }}
+      </div>
+    </div>
   </div>
-</div>>
+</div>

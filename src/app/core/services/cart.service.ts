@@ -1,11 +1,15 @@
 import { Injectable, signal, computed, effect, inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformServer } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
 import { Product } from '../../models/product';
 import { UserService } from './user.service';
 
 export interface CartItem extends Product {
   quantity: number;
+  selectedColor?: string;
+  selectedTalle?: string;
+  cartItemId?: number;
 }
 
 @Injectable({
@@ -16,9 +20,21 @@ export class CartService {
   private readonly http = inject(HttpClient);
   private readonly platformId = inject(PLATFORM_ID);
   private readonly userService = inject(UserService);
+  private readonly router = inject(Router);
 
   private readonly _cartItems = signal<CartItem[]>([]);
   readonly cartItems = this._cartItems.asReadonly();
+
+  readonly toastMessage = signal<string | null>(null);
+
+  showToast(msg: string) {
+    this.toastMessage.set(msg);
+    setTimeout(() => {
+      if (this.toastMessage() === msg) {
+        this.toastMessage.set(null);
+      }
+    }, 4000);
+  }
 
   readonly shipping = 1500;
   private backendCartId: number | null = null;
@@ -134,7 +150,7 @@ export class CartService {
     if (index >= items.length) {
       try {
         localStorage.removeItem(this.STORAGE_KEY);
-      } catch (e) {}
+      } catch (e) { }
       this.fetchBackendItems();
       return;
     }
@@ -144,7 +160,9 @@ export class CartService {
       `${this.apiUrl}/carritos/${this.backendCartId}/items`,
       {
         productoId: item.id,
-        cantidad: item.quantity
+        cantidad: item.quantity,
+        color: item.selectedColor,
+        talle: item.selectedTalle
       }
     ).subscribe({
       next: () => {
@@ -188,13 +206,19 @@ export class CartService {
           activo: true,
           categoria: { id: 0, nombre: '', descripcion: '', activo: true },
           variantes: item.variantes || [],
-          quantity: item.cantidad
+          quantity: item.cantidad,
+          selectedColor: item.color,
+          selectedTalle: item.talle,
+          cartItemId: item.id
         };
       } else if (item.producto) {
         // Formato entidad anidada (CarritoItem)
         return {
           ...item.producto,
-          quantity: item.cantidad
+          quantity: item.cantidad,
+          selectedColor: item.color,
+          selectedTalle: item.talle,
+          cartItemId: item.id
         };
       } else {
         // Fallback genérico
@@ -207,16 +231,37 @@ export class CartService {
           activo: true,
           categoria: item.categoria || { id: 0, nombre: '', descripcion: '', activo: true },
           variantes: item.variantes || [],
-          quantity: item.cantidad || item.quantity || 0
+          quantity: item.cantidad || item.quantity || 0,
+          selectedColor: item.color || item.selectedColor,
+          selectedTalle: item.talle || item.selectedTalle,
+          cartItemId: item.id
         };
       }
     });
     this._cartItems.set(mapped);
   }
 
-  addToCart(product: Product, quantity = 1) {
-    const maxStock = this.getTotalStock(product);
-    const existing = this._cartItems().find(item => item.id === product.id);
+  addToCart(product: Product, quantity = 1, color?: string, talle?: string) {
+    if (!this.userService.currentUser()) {
+      this.showToast('Antes de realizar una compra necesitamos que te registres.');
+      return;
+    }
+
+    let maxStock = 999;
+    if (product.variantes && color && talle) {
+      const variant = product.variantes.find(v => v.color && v.color.nombre === color && v.talle === talle);
+      if (variant) {
+        maxStock = variant.stock;
+      }
+    } else {
+      maxStock = this.getTotalStock(product);
+    }
+
+    const existing = this._cartItems().find(item =>
+      item.id === product.id &&
+      (!color || item.selectedColor === color) &&
+      (!talle || item.selectedTalle === talle)
+    );
     const currentQty = existing ? existing.quantity : 0;
     const finalQty = Math.min(quantity, maxStock - currentQty);
 
@@ -227,7 +272,9 @@ export class CartService {
         `${this.apiUrl}/carritos/${this.backendCartId}/items`,
         {
           productoId: product.id,
-          cantidad: finalQty
+          cantidad: finalQty,
+          color: color,
+          talle: talle
         }
       ).subscribe({
         next: () => this.fetchBackendItems(),
@@ -235,33 +282,37 @@ export class CartService {
       });
     } else {
       this._cartItems.update(items => {
-        const existingItem = items.find(item => item.id === product.id);
+        const existingItem = items.find(item =>
+          item.id === product.id &&
+          (!color || item.selectedColor === color) &&
+          (!talle || item.selectedTalle === talle)
+        );
         if (existingItem) {
           return items.map(item =>
-            item.id === product.id
+            (item.id === product.id &&
+              (!color || item.selectedColor === color) &&
+              (!talle || item.selectedTalle === talle))
               ? { ...item, quantity: Math.min(item.quantity + quantity, maxStock) }
               : item
           );
         }
-        return [...items, { ...product, quantity: Math.min(quantity, maxStock) }];
+        return [...items, { ...product, quantity: Math.min(quantity, maxStock), selectedColor: color, selectedTalle: talle }];
       });
     }
   }
 
-  updateQuantity(productId: number, quantity: number) {
+  updateQuantity(item: CartItem, quantity: number) {
     if (quantity <= 0) {
-      this.removeItem(productId);
+      this.removeItem(item);
       return;
     }
 
-    if (this.userService.currentUser() && this.backendCartId) {
-      const item = this._cartItems().find(i => i.id === productId);
-      if (!item) return;
+    if (this.userService.currentUser() && this.backendCartId && item.cartItemId) {
       const maxStock = this.getTotalStock(item);
       const finalQty = Math.min(quantity, maxStock);
 
       this.http.put<any>(
-        `${this.apiUrl}/carritos/${this.backendCartId}/items/${productId}`,
+        `${this.apiUrl}/carritos/${this.backendCartId}/items/by-item/${item.cartItemId}`,
         null,
         {
           params: {
@@ -274,27 +325,29 @@ export class CartService {
       });
     } else {
       this._cartItems.update(items =>
-        items.map(item => {
-          if (item.id === productId) {
-            const maxStock = this.getTotalStock(item);
-            return { ...item, quantity: Math.min(quantity, maxStock) };
+        items.map(i => {
+          if (i.id === item.id && i.selectedColor === item.selectedColor && i.selectedTalle === item.selectedTalle) {
+            const maxStock = this.getTotalStock(i);
+            return { ...i, quantity: Math.min(quantity, maxStock) };
           }
-          return item;
+          return i;
         })
       );
     }
   }
 
-  removeItem(productId: number) {
-    if (this.userService.currentUser() && this.backendCartId) {
+  removeItem(item: CartItem) {
+    if (this.userService.currentUser() && this.backendCartId && item.cartItemId) {
       this.http.delete<void>(
-        `${this.apiUrl}/carritos/${this.backendCartId}/items/${productId}`
+        `${this.apiUrl}/carritos/${this.backendCartId}/items/by-item/${item.cartItemId}`
       ).subscribe({
         next: () => this.fetchBackendItems(),
         error: (err) => console.error('Error removing product from backend cart:', err)
       });
     } else {
-      this._cartItems.update(items => items.filter(item => item.id !== productId));
+      this._cartItems.update(items => items.filter(i =>
+        !(i.id === item.id && i.selectedColor === item.selectedColor && i.selectedTalle === item.selectedTalle)
+      ));
     }
   }
 

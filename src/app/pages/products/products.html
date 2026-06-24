@@ -54,20 +54,27 @@
   </div>
 
   @if (totalPages() > 1) {
-  <div class="flex justify-center items-center gap-4 mt-12">
+  <div class="flex justify-center items-center gap-2 mt-12">
     <button (click)="previousPage()" [disabled]="currentPage() === 0"
       [class]="currentPage() === 0 
-                    ? 'px-4 py-2 bg-brand-card-gray border border-brand-border-gray text-gray-600 text-xs font-bold uppercase rounded-xl cursor-not-allowed'
-                    : 'px-4 py-2 bg-brand-card-gray border border-brand-border-gray hover:border-brand-red text-white text-xs font-bold uppercase rounded-xl transition-all duration-300 cursor-pointer'">
+                    ? 'px-3 py-1.5 bg-brand-card-gray border border-brand-border-gray text-gray-600 text-xs font-bold uppercase rounded-xl cursor-not-allowed'
+                    : 'px-3 py-1.5 bg-brand-card-gray border border-brand-border-gray hover:border-brand-red text-white text-xs font-bold uppercase rounded-xl transition-all duration-300 cursor-pointer'">
       ← Anterior
     </button>
-    <span class="text-xs font-bold text-brand-text-muted uppercase tracking-wider">
-      Página {{ currentPage() + 1 }} de {{ totalPages() }}
-    </span>
+
+    @for (page of pageNumbers(); track page) {
+    <button (click)="goToPage(page)"
+      [class]="currentPage() === page
+        ? 'w-8 h-8 bg-brand-red text-black border border-brand-red font-black text-xs uppercase rounded-xl transition-all'
+        : 'w-8 h-8 bg-brand-card-gray border border-brand-border-gray hover:border-white text-white font-bold text-xs uppercase rounded-xl transition-all duration-300 cursor-pointer'">
+      {{ page + 1 }}
+    </button>
+    }
+
     <button (click)="nextPage()" [disabled]="currentPage() >= totalPages() - 1"
       [class]="currentPage() >= totalPages() - 1 
-                    ? 'px-4 py-2 bg-brand-card-gray border border-brand-border-gray text-gray-600 text-xs font-bold uppercase rounded-xl cursor-not-allowed'
-                    : 'px-4 py-2 bg-brand-card-gray border border-brand-border-gray hover:border-brand-red text-white text-xs font-bold uppercase rounded-xl transition-all duration-300 cursor-pointer'">
+                    ? 'px-3 py-1.5 bg-brand-card-gray border border-brand-border-gray text-gray-600 text-xs font-bold uppercase rounded-xl cursor-not-allowed'
+                    : 'px-3 py-1.5 bg-brand-card-gray border border-brand-border-gray hover:border-brand-red text-white text-xs font-bold uppercase rounded-xl transition-all duration-300 cursor-pointer'">
       Siguiente →
     </button>
   </div>

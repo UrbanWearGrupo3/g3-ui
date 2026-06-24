@@ -28,6 +28,12 @@
         Admin Panel
       </a>
       }
+      @if (userService.currentUser() && userService.currentUser()?.role === 'user') {
+      <a routerLink="/my-orders" routerLinkActive="text-brand-red"
+        class="text-gray-300 hover:text-white transition-colors duration-200 uppercase">
+        Mis Pedidos
+      </a>
+      }
     </nav>
 
     <!-- Acciones Derecha -->
@@ -68,7 +74,7 @@
         </a>
         <a routerLink="/register"
           class="px-4 py-2 bg-brand-red hover:bg-white text-black hover:text-black text-xs font-black uppercase rounded-xl transition-all duration-300 shadow-lg">
-          Unirse
+          Registrarse
         </a>
       </div>
       }

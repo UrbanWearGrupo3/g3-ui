@@ -1,0 +1,199 @@
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-white">
+  <!-- Loading state -->
+  @if (isLoading()) {
+    <div class="flex flex-col items-center justify-center min-h-[50vh] space-y-4">
+      <div class="w-12 h-12 border-4 border-brand-red border-t-transparent rounded-full animate-spin"></div>
+      <p class="text-brand-text-muted font-semibold">Cargando detalles de la prenda...</p>
+    </div>
+  }
+
+  <!-- Error State -->
+  @else if (errorMessage()) {
+    <div class="text-center py-20 bg-brand-card-gray border border-brand-border-gray rounded-3xl max-w-xl mx-auto space-y-4">
+      <div class="mx-auto w-16 h-16 bg-neutral-900 text-brand-red flex items-center justify-center rounded-2xl border border-brand-border-gray">
+        <svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+        </svg>
+      </div>
+      <div>
+        <h3 class="text-lg font-bold text-white uppercase tracking-wider">Ha ocurrido un error</h3>
+        <p class="text-sm text-brand-text-muted mt-1 px-6">{{ errorMessage() }}</p>
+      </div>
+      <div>
+        <button (click)="goBack()" 
+                class="inline-flex items-center px-6 py-3.5 bg-brand-red hover:bg-white text-black hover:text-black font-black text-xs uppercase rounded-xl shadow-md transition-all duration-300 tracking-wider cursor-pointer">
+          Volver a la Tienda
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- Product Details content -->
+  @else if (product(); as prod) {
+    <div class="space-y-8">
+      <!-- Breadcrumbs / Go Back -->
+      <div class="flex items-center justify-between">
+        <button (click)="goBack()" 
+                class="flex items-center gap-2 px-4 py-2 border border-brand-border-gray hover:border-brand-red text-gray-300 hover:text-white text-xs font-bold uppercase rounded-xl transition-all duration-300 cursor-pointer bg-transparent">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+          </svg>
+          Volver
+        </button>
+      </div>
+
+      <!-- Main Layout Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+        
+        <!-- Left Column: Image -->
+        <div class="lg:col-span-6 space-y-4">
+          <div class="relative aspect-square rounded-3xl overflow-hidden border border-brand-border-gray bg-neutral-900 group shadow-2xl">
+            <img [src]="getImageUrl()" [alt]="prod.nombre" 
+                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+            
+            <span class="absolute top-4 left-4 px-4 py-1.5 bg-black/85 backdrop-blur-md text-xs font-black uppercase tracking-wider text-brand-red border border-brand-red/30 rounded-xl">
+              {{ prod.categoria?.nombre || 'Sin categoría' }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Right Column: Details & Selections -->
+        <div class="lg:col-span-6 space-y-6">
+          <div class="space-y-3">
+            @if (prod.marca) {
+              <p class="text-xs text-brand-red font-black tracking-widest uppercase">{{ prod.marca }}</p>
+            }
+            <h1 class="text-3xl sm:text-5xl font-black uppercase tracking-tight text-white leading-tight">
+              {{ prod.nombre }}
+            </h1>
+            <p class="text-2xl sm:text-3xl font-black text-white">
+              ${{ prod.precio | number:'1.2-2' }}
+            </p>
+          </div>
+
+          <div class="border-t border-brand-border-gray/50 pt-4">
+            <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Descripción</h3>
+            <p class="text-sm text-brand-text-muted leading-relaxed font-medium">
+              {{ prod.descripcion || 'Esta prenda no tiene una descripción cargada actualmente.' }}
+            </p>
+          </div>
+
+          <!-- Color Selector -->
+          @if (availableColors().length > 0) {
+            <div class="border-t border-brand-border-gray/50 pt-5 space-y-3">
+              <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Color</h3>
+              <div class="flex flex-wrap gap-3">
+                @for (color of availableColors(); track color.id) {
+                  <button (click)="selectColor(color)" 
+                          [class.border-brand-red]="selectedColor()?.id === color.id"
+                          [class.border-brand-border-gray]="selectedColor()?.id !== color.id"
+                          class="px-4 py-2 border hover:border-brand-red rounded-xl text-xs font-bold uppercase transition-all duration-300 bg-brand-card-gray hover:bg-neutral-900 cursor-pointer flex items-center gap-2">
+                    @if (color.codigoHex) {
+                      <span class="w-3.5 h-3.5 rounded-full border border-white/20" 
+                            [style.background-color]="color.codigoHex"></span>
+                    }
+                    {{ color.nombre }}
+                  </button>
+                }
+              </div>
+            </div>
+          }
+
+          <!-- Size Selector -->
+          @if (availableTalles().length > 0) {
+            <div class="border-t border-brand-border-gray/50 pt-5 space-y-3">
+              <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Talle</h3>
+              <div class="flex flex-wrap gap-3">
+                @for (talle of availableTalles(); track talle) {
+                  <button (click)="selectTalle(talle)" 
+                          [class.bg-brand-red]="selectedTalle() === talle"
+                          [class.text-black]="selectedTalle() === talle"
+                          [class.bg-brand-card-gray]="selectedTalle() !== talle"
+                          [class.text-white]="selectedTalle() !== talle"
+                          [class.border-brand-red]="selectedTalle() === talle"
+                          [class.border-brand-border-gray]="selectedTalle() !== talle"
+                          class="w-12 h-12 border rounded-xl flex items-center justify-center text-sm font-black transition-all duration-300 hover:border-brand-red hover:bg-neutral-900 hover:text-white cursor-pointer">
+                    {{ talle }}
+                  </button>
+                }
+              </div>
+            </div>
+          }
+
+          <!-- Variant Info (Barcode and stock) -->
+          @if (selectedVariant(); as variant) {
+            <div class="p-4 bg-brand-card-gray border border-brand-border-gray rounded-2xl space-y-2.5">
+              <div class="flex justify-between items-center text-xs">
+                <span class="font-bold text-gray-400 uppercase tracking-wider">Código de Variante:</span>
+                <span class="font-mono text-brand-red font-black tracking-wider bg-black/60 px-2.5 py-1 rounded-lg">
+                  {{ variant.codigoBarras || 'S/C' }}
+                </span>
+              </div>
+              <div class="flex justify-between items-center text-xs">
+                <span class="font-bold text-gray-400 uppercase tracking-wider">Disponibilidad:</span>
+                @if (variant.stock > 0) {
+                  <span class="text-emerald-400 font-bold">En Stock ({{ variant.stock }} unidades)</span>
+                } @else {
+                  <span class="text-brand-red font-bold">Agotado</span>
+                }
+              </div>
+            </div>
+
+            <!-- Quantity & Add to Cart Controls -->
+            @if (variant.stock > 0) {
+              <div class="border-t border-brand-border-gray/50 pt-5 space-y-4">
+                <div class="flex items-center gap-4">
+                  <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Cantidad</span>
+                  
+                  <div class="flex items-center border border-brand-border-gray rounded-xl overflow-hidden bg-black">
+                    <button (click)="decrementQuantity()" 
+                            [disabled]="quantity() <= 1"
+                            class="px-4 py-2 hover:bg-neutral-900 text-gray-400 hover:text-brand-red font-black transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed">
+                      -
+                    </button>
+                    <span class="px-4 py-2 text-sm font-black text-white min-w-[40px] text-center">
+                      {{ quantity() }}
+                    </span>
+                    <button (click)="incrementQuantity()" 
+                            [disabled]="quantity() >= variant.stock"
+                            class="px-4 py-2 hover:bg-neutral-900 text-gray-400 hover:text-brand-red font-black transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed">
+                      +
+                    </button>
+                  </div>
+                </div>
+
+                <div class="pt-2 flex flex-col sm:flex-row gap-4">
+                  <button (click)="addToCart()" 
+                          [disabled]="variant.stock <= 0"
+                          [class.bg-emerald-500]="addedToCartSuccess()"
+                          [class.hover:bg-emerald-600]="addedToCartSuccess()"
+                          [class.text-white]="addedToCartSuccess()"
+                          [class.bg-brand-red]="!addedToCartSuccess()"
+                          [class.text-black]="!addedToCartSuccess()"
+                          class="flex-grow py-4 px-8 font-black text-sm uppercase rounded-xl transition-all duration-300 shadow-xl shadow-brand-red/10 hover:shadow-white/5 hover:bg-white flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
+                    @if (addedToCartSuccess()) {
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
+                      </svg>
+                      ¡Prenda Añadida!
+                    } @else {
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                      </svg>
+                      Añadir al Carrito
+                    }
+                  </button>
+                </div>
+              </div>
+            }
+          } @else {
+            <div class="p-4 bg-brand-card-gray border border-brand-border-gray rounded-2xl text-center text-brand-text-muted text-sm font-semibold">
+              Por favor, selecciona un color y talle para ver disponibilidad.
+            </div>
+          }
+        </div>
+
+      </div>
+    </div>
+  }
+</div>

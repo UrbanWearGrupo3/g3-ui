@@ -65,33 +65,10 @@ export class Checkout {
           return;
         }
 
-        // Usuario registrado: crear preferencia de MP y redirigir
-        try {
-          const pref = await this.mpService.crearPreference(numericId).toPromise();
-
-          if (pref && (pref.sandboxInitPoint || pref.initPoint)) {
-            // Limpiar el carrito ANTES de redirigir al portal externo de MP
-            this.cartService.clearCart();
-            this.isSubmitting.set(false);
-            // Mostrar pantalla de redirección brevemente
-            this.mpReady.set(true);
-            // Redirigir al portal de MP (no embebido)
-            setTimeout(() => {
-              this.mpService.redirigirAMercadoPago(pref.initPoint, pref.sandboxInitPoint);
-            }, 800);
-            return;
-          }
-
-          throw new Error('La respuesta de Mercado Pago no contiene un punto de pago válido.');
-
-        } catch (e: any) {
-          console.error('Error al iniciar el pago con Mercado Pago:', e);
-          this.isSubmitting.set(false);
-          this.errorMessage.set(
-            `Tu pedido #${order.id} fue registrado, pero no pudimos conectar con Mercado Pago. ` +
-            `Podés intentar el pago desde la sección "Mis Pedidos".`
-          );
-        }
+        // Usuario registrado: Compra fingida saltando Mercado Pago
+        this.cartService.clearCart();
+        this.router.navigate(['checkout-success'], { queryParams: { orderId: order.id } });
+        this.isSubmitting.set(false);
       },
       error: (err) => {
         console.error('Checkout error:', err);
