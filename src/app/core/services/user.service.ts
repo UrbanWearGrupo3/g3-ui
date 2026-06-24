@@ -4,7 +4,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, of } from 'rxjs';
 import { map, tap, catchError } from 'rxjs/operators';
-import { User } from '../../models/user';
+import { User, UserPage } from '../../models/user';
 
 @Injectable({
   providedIn: 'root'
@@ -140,7 +140,7 @@ export class UserService {
     this.router.navigate(['/login']);
   }
 
-  getUsers(filters?: { search?: string; rol?: string; activo?: boolean }): Observable<User[]> {
+  getUsers(filters?: { search?: string; rol?: string; activo?: boolean; page?: number; size?: number }): Observable<UserPage> {
     let params = new HttpParams();
     if (filters) {
       if (filters.search) params = params.set('search', filters.search);
@@ -154,16 +154,37 @@ export class UserService {
         params = params.set('rol', backendRol);
       }
       if (filters.activo !== undefined) params = params.set('activo', filters.activo.toString());
+      if (filters.page !== undefined) params = params.set('page', filters.page.toString());
+      if (filters.size !== undefined) params = params.set('size', filters.size.toString());
     }
 
     return this.http.get<any>(`${this.apiUrl}/usuarios`, { params }).pipe(
       map(res => {
         const list = res && res.content ? res.content : (Array.isArray(res) ? res : []);
-        return list.map((u: any) => this.mapUser(u));
+        const content = list.map((u: any) => this.mapUser(u));
+        return {
+          content,
+          totalElements: res?.totalElements || content.length,
+          totalPages: res?.totalPages || 1,
+          size: res?.size || content.length,
+          number: res?.number || 0,
+          first: res?.first !== undefined ? res.first : true,
+          last: res?.last !== undefined ? res.last : true,
+          empty: res?.empty !== undefined ? res.empty : content.length === 0
+        };
       }),
       catchError(err => {
         console.error('Backend getUsers error:', err);
-        return of([]);
+        return of({
+          content: [],
+          totalElements: 0,
+          totalPages: 0,
+          size: 10,
+          number: 0,
+          first: true,
+          last: true,
+          empty: true
+        });
       })
     );
   }

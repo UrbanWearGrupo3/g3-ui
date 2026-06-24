@@ -57,7 +57,7 @@
           </tr>
         </thead>
         <tbody class="divide-y divide-brand-border-gray/50">
-          @for (order of recentOrders(); track order.id) {
+          @for (order of paginatedOrders(); track order.id) {
           <tr class="hover:bg-black/25 transition-colors">
             <td class="py-4 px-6 font-mono font-bold text-white text-xs">#{{ order.id }}</td>
             <td class="py-4 px-6 font-bold text-white">{{ order.customerName }}</td>
@@ -110,6 +110,55 @@
           }
         </tbody>
       </table>
+    </div>
+
+    <!-- Paginación de Ventas -->
+    <div class="flex flex-col sm:flex-row justify-between items-center gap-4 p-6 border-t border-brand-border-gray">
+      <!-- Selector de tamaño -->
+      <div class="flex items-center gap-2 text-xs font-semibold text-brand-text-muted">
+        <span>Mostrar:</span>
+        <select [value]="pageSize()" (change)="onPageSizeChange($event)"
+          class="bg-black border border-brand-border-gray rounded-lg px-2 py-1 text-white focus:outline-none focus:border-brand-red cursor-pointer">
+          <option [value]="5">5</option>
+          <option [value]="10">10</option>
+          <option [value]="20">20</option>
+          <option [value]="50">50</option>
+        </select>
+        <span>ventas</span>
+      </div>
+
+      <!-- Navegación -->
+      @if (totalPages() > 1) {
+      <div class="flex items-center gap-2">
+        <button (click)="previousPage()" [disabled]="currentPage() === 0"
+          [class]="currentPage() === 0
+            ? 'px-3 py-1.5 bg-black border border-brand-border-gray text-gray-650 text-xs font-bold uppercase rounded-lg cursor-not-allowed'
+            : 'px-3 py-1.5 bg-black border border-brand-border-gray hover:border-brand-red text-white text-xs font-bold uppercase rounded-lg transition-all duration-300 cursor-pointer'">
+          Anterior
+        </button>
+
+        @for (page of pageNumbers(); track page) {
+        <button (click)="goToPage(page)"
+          [class]="currentPage() === page
+            ? 'w-8 h-8 bg-brand-red text-black border border-brand-red font-black text-xs uppercase rounded-lg transition-all'
+            : 'w-8 h-8 bg-black border border-brand-border-gray hover:border-white text-white font-bold text-xs uppercase rounded-lg transition-all duration-300 cursor-pointer'">
+          {{ page + 1 }}
+        </button>
+        }
+
+        <button (click)="nextPage()" [disabled]="currentPage() >= totalPages() - 1"
+          [class]="currentPage() >= totalPages() - 1
+            ? 'px-3 py-1.5 bg-black border border-brand-border-gray text-gray-650 text-xs font-bold uppercase rounded-lg cursor-not-allowed'
+            : 'px-3 py-1.5 bg-black border border-brand-border-gray hover:border-brand-red text-white text-xs font-bold uppercase rounded-lg transition-all duration-300 cursor-pointer'">
+          Siguiente
+        </button>
+      </div>
+      }
+
+      <!-- Indicador -->
+      <div class="text-xs font-bold text-brand-text-muted uppercase tracking-wider">
+        Página {{ currentPage() + 1 }} de {{ totalPages() || 1 }}
+      </div>
     </div>
   </div>
 </div>
@@ -176,43 +225,7 @@
         </div>
       </div>
 
-      <!-- Lista de Productos en el Pedido -->
-      <div>
-        <h4 class="text-xs font-black text-white uppercase tracking-wider border-b border-brand-border-gray pb-2 mb-3">Productos Comprados</h4>
-        <div class="space-y-3">
-          @for (item of selectedOrder()?.detalles; track item.id) {
-            <div class="flex items-center justify-between p-3 bg-black/20 border border-brand-border-gray/50 rounded-xl hover:bg-black/30 transition-colors">
-              <div class="flex items-center gap-3">
-                <img [src]="item.producto.imagenUrl || 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=100&auto=format&fit=crop&q=80'" 
-                     alt="{{ item.producto.nombre }}" 
-                     class="w-12 h-12 object-cover rounded-lg border border-brand-border-gray" />
-                <div>
-                  <p class="text-sm font-bold text-white leading-snug">{{ item.producto.nombre }}</p>
-                  <div class="flex flex-wrap gap-2 items-center mt-1">
-                    <span class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">{{ item.producto.marca || 'UrbanWear' }}</span>
-                    @if (item.talle) {
-                      <span class="w-1 h-1 bg-brand-border-gray rounded-full"></span>
-                      <span class="text-[10px] text-gray-400 font-bold uppercase">Talle: <span class="text-white">{{ item.talle }}</span></span>
-                    }
-                    @if (item.color) {
-                      <span class="w-1 h-1 bg-brand-border-gray rounded-full"></span>
-                      <span class="text-[10px] text-gray-400 font-bold uppercase">Color: <span class="text-white">{{ item.color }}</span></span>
-                    }
-                  </div>
-                </div>
-              </div>
-              <div class="text-right">
-                <p class="text-xs font-semibold text-white">${{ item.producto.precio | number:'1.2-2' }} x {{ item.cantidad }}</p>
-                <p class="text-xs font-black text-brand-red mt-0.5">${{ (item.producto.precio * item.cantidad) | number:'1.2-2' }}</p>
-              </div>
-            </div>
-          } @empty {
-            <div class="text-center py-6 border border-dashed border-brand-border-gray rounded-xl">
-              <p class="text-xs text-brand-text-muted">Este pedido no tiene artículos detallados.</p>
-            </div>
-          }
-        </div>
-      </div>
+
 
     </div>
 

@@ -28,7 +28,7 @@
         Admin Panel
       </a>
       }
-      @if (userService.currentUser()) {
+      @if (userService.currentUser() && userService.currentUser()?.role === 'user') {
       <a routerLink="/my-orders" routerLinkActive="text-brand-red"
         class="text-gray-300 hover:text-white transition-colors duration-200 uppercase">
         Mis Pedidos

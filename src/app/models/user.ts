@@ -7,3 +7,15 @@ export interface User {
   activo: boolean;
   createdAt?: Date;
 }
+
+export interface UserPage {
+  content: User[];
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number;
+  first: boolean;
+  last: boolean;
+  empty: boolean;
+}
+

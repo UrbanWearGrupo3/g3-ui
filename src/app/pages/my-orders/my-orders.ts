@@ -21,8 +21,13 @@ export class MyOrders implements OnInit {
   expandedOrderId = signal<string | null>(null);
 
   ngOnInit(): void {
-    if (!this.userService.currentUser()) {
+    const user = this.userService.currentUser();
+    if (!user) {
       this.router.navigate(['/login'], { queryParams: { message: 'Inicia sesión para ver tu historial de pedidos.' } });
+      return;
+    }
+    if (user.role !== 'user') {
+      this.router.navigate(['/admin']);
       return;
     }
     this.loadOrders();

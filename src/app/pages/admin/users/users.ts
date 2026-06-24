@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { DatePipe, CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UserService } from '../../../core/services/user.service';
@@ -32,12 +32,29 @@ export class Users implements OnInit {
   roleFilter = signal<string>('');
   activoFilter = signal<string>('');
 
+  // Pagination states
+  currentPage = signal<number>(0);
+  totalPages = signal<number>(0);
+  totalElements = signal<number>(0);
+  pageSize = signal<number>(10);
+
+  pageNumbers = computed(() => {
+    const pages = [];
+    for (let i = 0; i < this.totalPages(); i++) {
+      pages.push(i);
+    }
+    return pages;
+  });
+
   ngOnInit(): void {
     this.loadUsers();
   }
 
   loadUsers(): void {
-    const filters: any = {};
+    const filters: any = {
+      page: this.currentPage(),
+      size: this.pageSize()
+    };
     const query = this.searchQuery().trim();
     if (query) filters.search = query;
 
@@ -50,7 +67,11 @@ export class Users implements OnInit {
     }
 
     this.userService.getUsers(filters).subscribe({
-      next: (users) => this.users.set(users),
+      next: (page) => {
+        this.users.set(page.content);
+        this.totalPages.set(page.totalPages);
+        this.totalElements.set(page.totalElements);
+      },
       error: (err) => console.error('Error fetching admin users from Java backend:', err)
     });
   }
@@ -65,6 +86,7 @@ export class Users implements OnInit {
     } else if (field === 'activo') {
       this.activoFilter.set(val);
     }
+    this.currentPage.set(0);
     this.loadUsers();
   }
 
@@ -72,6 +94,35 @@ export class Users implements OnInit {
     this.searchQuery.set('');
     this.roleFilter.set('');
     this.activoFilter.set('');
+    this.currentPage.set(0);
+    this.loadUsers();
+  }
+
+  nextPage() {
+    if (this.currentPage() < this.totalPages() - 1) {
+      this.currentPage.update(p => p + 1);
+      this.loadUsers();
+    }
+  }
+
+  previousPage() {
+    if (this.currentPage() > 0) {
+      this.currentPage.update(p => p - 1);
+      this.loadUsers();
+    }
+  }
+
+  goToPage(page: number) {
+    if (page >= 0 && page < this.totalPages()) {
+      this.currentPage.set(page);
+      this.loadUsers();
+    }
+  }
+
+  onPageSizeChange(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    this.pageSize.set(Number(target.value));
+    this.currentPage.set(0);
     this.loadUsers();
   }
 
